@@ -1,0 +1,24 @@
+plugins { id 'java' }
+repositories {
+    maven { url = 'https://repo.runelite.net'; content { includeGroupByRegex 'net\\.runelite.*' } }
+    mavenCentral()
+}
+def runeLiteVersion = '1.12.38'
+dependencies {
+    compileOnly "net.runelite:client:${runeLiteVersion}"
+    testImplementation "net.runelite:client:${runeLiteVersion}"
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:4.11.0'
+}
+group = 'com.infernolos'
+version = '0.1.0'
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release.set(11) }
+tasks.register('run', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.infernolos.InfernoLosLauncher'
+    args '--developer-mode', '--debug'
+    jvmArgs '-ea'
+    if (project.hasProperty('runeliteHome')) {
+        systemProperty 'user.home', project.property('runeliteHome')
+    }
+}

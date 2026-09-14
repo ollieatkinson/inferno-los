@@ -1,0 +1,28 @@
+{
+  "name": "inferno-los",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "vitest run",
+    "test:browser": "playwright test",
+    "format": "prettier --write src tests docs .github *.ts *.json *.md"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "prettier": "^3.9.6",
+    "typescript": "~5.6.2",
+    "vite": "^6.4.0",
+    "vitest": "^4.1.11"
+  }
+}
