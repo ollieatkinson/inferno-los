@@ -30,7 +30,7 @@ This tracks the full request, including follow-up messages. A checked item means
 - [x] Keep the website available locally for review.
 - [x] Add meleer digging, visible burrow/emergence cues, editable next-check timing, delayed attacks and deterministic share/replay state. Verify underground collision/LoS, legal destinations, recent-attack restriction, rewind/resume and browser prayer checks. All 44 unit tests and 15 browser tests pass, including drag performance.
 - [x] Evaluate contributing to Inferno Stats: prepare a tested local `add-inferno-tips` branch adding a Wave Tool option and reuse its existing spawn query format on the website. Verify an actual Java-generated URL in the browser. See `docs/INFERNO_STATS.md`.
-- [ ] Submit the Inferno Stats contribution for maintainer review; no upstream PR or maintainer message has been sent.
+- [x] Submit the Inferno Stats contribution for maintainer review: [PR #20](https://github.com/InfernoStats/InfernoStats/pull/20). Prefer this integration route for saved-wave links; retain the standalone plugin for current-position capture while integration develops.
 - [x] Keep Controls, timing & credits permanently expanded below the arena.
 - [x] Enter a wave number to generate a practice setup: correct lineups for waves 1–66, random unique standard spawn slots, central nibblers, and existing pillar-free Jad drills for 67–68. Repeat **Spawn wave** for a new layout, **Reset** to retry, and share exact positions with IL2 links. Support `?wave=63`; reject unsupported Zuk wave 69. Verified all 66 lineups against reference data, legal placements across 1,320 generated layouts, and browser generation/reset/reshuffle/sharing/Jad transitions. All 33 unit tests and 13 browser tests pass, including drag performance.
 - [x] Provide a RuneLite sidebar inspired by Fortis Colosseum, with wave-start and current-position LoS buttons and copy links. Verified in a real RuneLite startup after fixing the EDT lifecycle issue.
@@ -45,12 +45,12 @@ This tracks the full request, including follow-up messages. A checked item means
 ## Hosting and submission follow-up (15 September 2026)
 
 - [x] Document Cloudflare Pages deployment, local plugin testing, and Plugin Hub submission in `docs/RELEASE.md`; prepare a static upload ZIP.
-- [ ] Authenticate Cloudflare, deploy the site and verify the production URL.
+- [x] Deploy through Cloudflare Pages and verify `https://los.inferno.tips/` over HTTPS, including a generated wave, Inferno Stats import and dig cue.
 - Production domain selected: `https://los.inferno.tips/`. User purchased `inferno.tips` and added a CNAME. Initial checks returned NXDOMAIN from local, Google and Cloudflare resolvers; verify Pages **Custom domains** association, DNS and HTTPS. The user subsequently requested switching the plugin default in advance of activation.
-- [x] Set the plugin's default website URL to `https://los.inferno.tips/` ahead of activation at the user's request; update setup docs and the Windows checkout. DNS/HTTPS verification remains outstanding.
+- [x] Set the plugin's default website URL to `https://los.inferno.tips/` ahead of activation at the user's request; update setup docs and the Windows checkout. DNS/HTTPS and hosted links have since been verified.
 - [ ] Complete a logged-in Inferno playtest of current positions and wave captures.
 - [x] Publish the standalone plugin source repository.
-- [ ] Submit a tested plugin commit to the Plugin Hub after hosting and live validation.
+- [ ] Reassess standalone Plugin Hub submission after the Inferno Stats integration review; do not submit a duplicate saved-wave plugin in the meantime.
 - [x] Use Cloudflare Pages as requested: Git integration, branch `trunk`, build `npm run build`, output `dist`, and `NODE_VERSION=22`. Remove the mistakenly added Workers config and instructions.
 
 ## Working preferences
