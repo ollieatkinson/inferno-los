@@ -15,7 +15,7 @@ Jad tests cover an eight-tick single-Jad cycle and three nine-tick cycles stagge
 
 ## Hosting and release status
 
-The website has a static production build for Cloudflare Pages or Workers, with `wrangler.jsonc` pointing to `dist/`. Source repositories are published independently. Cloudflare setup is being completed by the user; a production deployment and logged-in Inferno playtest have not been verified. No Plugin Hub submission has been opened.
+The website has a static production build for Cloudflare Pages, with `npm run build` producing `dist/`. The mistakenly added Workers config has been removed. Source repositories are published independently. Cloudflare Pages setup is being completed by the user; a production deployment and logged-in Inferno playtest have not been verified. No Plugin Hub submission has been opened.
 
 ## Real RuneLite startup
 

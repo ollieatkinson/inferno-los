@@ -44,7 +44,7 @@ This tracks the full request, including follow-up messages. A checked item means
 - [ ] Complete a logged-in Inferno playtest of current positions and wave captures.
 - [x] Publish the standalone plugin source repository.
 - [ ] Submit a tested plugin commit to the Plugin Hub after hosting and live validation.
-- [x] Configure static asset hosting for the user's Cloudflare Workers setup screen (`npm run build`, `npx wrangler deploy`, `trunk`).
+- [x] Use Cloudflare Pages as requested: Git integration, branch `trunk`, build `npm run build`, output `dist`, and `NODE_VERSION=22`. Remove the mistakenly added Workers config and instructions.
 
 ## Working preferences
 

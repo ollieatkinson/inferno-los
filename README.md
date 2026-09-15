@@ -57,7 +57,7 @@ See [docs/LINKS.md](docs/LINKS.md) for the versioned plugin/website contract and
 
 See [Cloudflare hosting and RuneLite release](docs/RELEASE.md) for hosting settings, local plugin testing, and the Plugin Hub submission process.
 
-`npm run build` produces a static `dist/` directory that can be served on any static host. Relative asset paths support subdirectory hosting. For Cloudflare Workers, build with `npm run build` and deploy with `npx wrangler deploy`; `wrangler.jsonc` configures the static assets. Cloudflare Pages can use the same build command and output directory `dist`. An optional manually triggered GitHub Pages workflow is also included. Set the plugin's **Website URL** to the deployed address.
+Deploy through **Cloudflare Pages → Import an existing Git repository**, selecting `ollieatkinson/inferno-los` and branch `trunk`. Use build command `npm run build`, output directory `dist`, and build variable `NODE_VERSION=22`. Leave the root directory at the repository root. Pages Git integration handles deployment without a deploy command or API token. Set the plugin's **Website URL** to the assigned `pages.dev` address after verifying it.
 
 No site has been published and the plugin has not been submitted to the Plugin Hub. Automated verification includes a compiled plugin, Swing sidebar actions, mocked RuneLite scene capture, browser integration, and an isolated real RuneLite startup; it does not constitute an in-game playtest.
 
