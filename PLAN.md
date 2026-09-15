@@ -28,6 +28,9 @@ This tracks the full request, including follow-up messages. A checked item means
 - [x] Make scoring reflect prayer checks, including the blob's scan/attack cycle and Jad's delayed prayer check. Clearly distinguish modeled timing from live-game timing.
 - [x] Preserve relevant Colosseum improvements: draggable NPCs, improved corner pathing, tick timeline, replay sharing, and convenient wave/current links. Colosseum-specific mobs/modifiers do not belong here.
 - [x] Keep the website available locally for review.
+- [x] Add meleer digging, visible burrow/emergence cues, editable next-check timing, delayed attacks and deterministic share/replay state. Verify underground collision/LoS, legal destinations, recent-attack restriction, rewind/resume and browser prayer checks. All 43 unit tests and 15 browser tests pass, including drag performance.
+- [x] Evaluate contributing to Inferno Stats: prepare a tested local `add-inferno-tips` branch adding a Wave Tool option and reuse its existing spawn query format on the website. Verify an actual Java-generated URL in the browser. See `docs/INFERNO_STATS.md`.
+- [ ] Submit the Inferno Stats contribution for maintainer review; no upstream PR or maintainer message has been sent.
 - [x] Keep Controls, timing & credits permanently expanded below the arena.
 - [x] Enter a wave number to generate a practice setup: correct lineups for waves 1–66, random unique standard spawn slots, central nibblers, and existing pillar-free Jad drills for 67–68. Repeat **Spawn wave** for a new layout, **Reset** to retry, and share exact positions with IL2 links. Support `?wave=63`; reject unsupported Zuk wave 69. Verified all 66 lineups against reference data, legal placements across 1,320 generated layouts, and browser generation/reset/reshuffle/sharing/Jad transitions. All 33 unit tests and 13 browser tests pass, including drag performance.
 - [x] Provide a RuneLite sidebar inspired by Fortis Colosseum, with wave-start and current-position LoS buttons and copy links. Verified in a real RuneLite startup after fixing the EDT lifecycle issue.
@@ -113,7 +116,7 @@ This tracks the full request, including follow-up messages. A checked item means
 | Scouter codes and full links                           | `src/trainer.test.ts`, `src/engine.test.ts`, browser imports and Java-generated URL fixture                                              |
 | Trainer, scans, delayed Jad checks, scoring, timing    | Unit fixtures plus full 60-tick browser drill; current-stack preservation browser test                                                   |
 | Performance                                            | `ThreatMapCache` rebuild-count test; RAF-batched pointer handler; measured populated-scene browser test                                  |
-| Plugin/sidebar integration                             | Separate plugin repository's `IntegrationTest.java`, `PanelTest.java`; committed/fresh Java fixtures opened by Playwright               |
+| Plugin/sidebar integration                             | Separate plugin repository's `IntegrationTest.java`, `PanelTest.java`; committed/fresh Java fixtures opened by Playwright                |
 | Local use and independently buildable plugin           | Successful Vite build, Gradle test/JAR; root and plugin READMEs                                                                          |
 | Reproducible validation/release path                   | `package-lock.json`, pinned RuneLite API, `.github/workflows/verify.yml`, manual Pages workflow                                          |
 

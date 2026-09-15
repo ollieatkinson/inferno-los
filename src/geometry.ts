@@ -42,6 +42,7 @@ export function legal(mob: Mob, s: Scenario, checkMobs = true) {
     !s.mobs.some(
       (other) =>
         other.id !== mob.id &&
+        !other.dig?.remaining &&
         other.type !== "nibbler" &&
         mob.type !== "nibbler" &&
         overlaps(mob, size, other, NPCS[other.type].size),
@@ -79,6 +80,7 @@ export function canAttack(
   const { size, range } = NPCS[mob.type];
   if (
     mob.type === "nibbler" ||
+    !!mob.dig?.remaining ||
     contains(mob.x, mob.y, size, player) ||
     blocked(player, pillars)
   )

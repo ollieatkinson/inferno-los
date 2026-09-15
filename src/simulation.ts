@@ -7,6 +7,7 @@ import {
   type Tile,
 } from "./model";
 import { canAttack, contains, legal, styles } from "./geometry";
+import { advanceDig, type DigEvent } from "./dig";
 export interface Attack {
   id: number;
   styles: Prayer[];
@@ -22,6 +23,7 @@ export interface Frame {
   attacks: Attack[];
   cues: Cue[];
   prayer: Prayer | null;
+  digs: DigEvent[];
 }
 const randomStyle = (m: Mob): Prayer =>
   (((m.id + 1) * 1103515245 + (m.attackCount ?? 0) * 12345) >>> 8) % 2
@@ -43,15 +45,18 @@ export class Simulation {
     const s = structuredClone(this.scenario);
     s.player = [...player];
     const attacks: Attack[] = [],
-      cues: Cue[] = [];
+      cues: Cue[] = [],
+      digs: DigEvent[] = [];
     s.mobs.sort((a, b) => a.id - b.id);
     const hit = (m: Mob, style: Prayer) => {
       attacks.push({ id: m.id, styles: [style], style });
       m.attackCount = (m.attackCount ?? 0) + 1;
+      if (m.dig) m.dig.sinceAttack = 0;
     };
     for (const m of s.mobs) {
       if (m.type === "nibbler") continue;
       m.cooldown = Math.max(0, (m.cooldown ?? 0) - 1);
+      if (advanceDig(m, s, player, digs)) continue;
       if (m.pendingStyle && m.pendingTicks !== undefined) {
         m.pendingTicks--;
         if (m.pendingTicks <= 0) {
@@ -100,12 +105,30 @@ export class Simulation {
     }
     this.steps.push({ player: [...player], prayer });
     this.scenario = s;
-    const frame = { scenario: structuredClone(s), attacks, cues, prayer };
+    const frame = { scenario: structuredClone(s), attacks, cues, prayer, digs };
     this.frames.push(frame);
     return frame;
   }
   private move(m: Mob, s: Scenario, player: Tile) {
     const size = NPCS[m.type].size;
+    if (contains(m.x, m.y, size, player)) {
+      // A dig can emerge underneath the player. Step toward the closest edge
+      // rather than trying to path to a tile already inside our footprint.
+      const exits = [
+        { dx: -1, dy: 0, distance: m.x + size - player[0] },
+        { dx: 1, dy: 0, distance: player[0] - m.x + 1 },
+        { dx: 0, dy: 1, distance: player[1] - (m.y - size + 1) + 1 },
+        { dx: 0, dy: -1, distance: m.y - player[1] + 1 },
+      ].sort((a, b) => a.distance - b.distance);
+      const exit = exits.find(({ dx, dy }) =>
+        legal({ ...m, x: m.x + dx, y: m.y + dy }, s),
+      );
+      if (exit) {
+        m.x += exit.dx;
+        m.y += exit.dy;
+      }
+      return;
+    }
     let dx = Math.sign(player[0] - m.x),
       dy = Math.sign(player[1] - m.y);
     if (contains(m.x + dx, m.y + dy, size, player)) dy = 0;

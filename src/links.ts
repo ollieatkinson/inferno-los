@@ -10,6 +10,7 @@ import { blocked, legal } from "./geometry";
 import { decodeScout } from "./scout";
 import { decodeCode, encodeCode } from "./shareCode";
 import { waveScenario } from "./waves";
+import { decodeInfernoStats } from "./infernoStats";
 const integer = (v: unknown, min: number, max: number): v is number =>
   Number.isInteger(v) && (v as number) >= min && (v as number) <= max;
 function tile(v: unknown): v is Tile {
@@ -75,6 +76,24 @@ export function validateScenario(v: unknown): Scenario {
       throw new Error("Invalid attack state.");
     if (!legal(mob, s, false))
       throw new Error("An NPC is outside the arena or inside a pillar.");
+    if (mob.dig !== undefined) {
+      const d = mob.dig;
+      if (
+        mob.type !== "melee" ||
+        !d ||
+        !integer(d.timer, 0, 60) ||
+        !integer(d.count, 0, 100000) ||
+        !integer(d.sinceAttack, 0, 15) ||
+        !integer(d.remaining, 0, 6) ||
+        !integer(d.recovery, 0, 2) ||
+        (d.remaining > 0 && d.recovery > 0) ||
+        d.remaining > 0 !== (d.target !== undefined) ||
+        (d.target !== undefined &&
+          (!tile(d.target) ||
+            !legal({ ...mob, x: d.target[0], y: d.target[1] }, s, false)))
+      )
+        throw new Error("Invalid meleer dig state.");
+    }
   }
   if (blocked(s.player, s.pillars))
     throw new Error("The player is outside the arena or inside a pillar.");
@@ -105,6 +124,8 @@ export function decodeLink(input: string): Replay | null {
     (url.hash.startsWith("#[") ? decodeURIComponent(url.hash.slice(1)) : null);
   if (scout)
     return { scenario: validateScenario(decodeScout(scout)), steps: [] };
+  const stats = !url.hash && decodeInfernoStats(url.searchParams);
+  if (stats) return { scenario: validateScenario(stats), steps: [] };
   if (!url.hash && url.searchParams.has("wave"))
     return {
       scenario: validateScenario(

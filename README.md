@@ -50,7 +50,11 @@ The map uses the established Inferno LoS tool's 29×30 coordinate grid and three
 
 Blobs scan protection and schedule the opposite ranged/magic attack three ticks later; their cycle is six ticks. Jad has a windup and a prayer check three ticks later. The trainer uses reproducible choices for unknown styles. A pending blob/Jad attack is retained in a shared current-position link. The website never claims to recover live attack cooldowns from a positional snapshot: initial delays are editable.
 
-This is not a complete combat simulator. It does not model player pathfinding, damage/HP, melee digs, NPC resurrection, nibbler AI, or Zuk/shield mechanics. Movement places the player at the chosen tile, then stepping moves NPCs. Zuk-wave links explicitly identify their supported-adds-only scope. An accuracy score measures this simulator's prayer checks; idle ticks are not a calculation of prayer-point drain. Browser playback pauses when the tab is hidden.
+This is not a complete combat simulator. It does not model player pathfinding, damage/HP, NPC resurrection, nibbler AI, or Zuk/shield mechanics. Movement places the player at the chosen tile, then stepping moves NPCs. Zuk-wave links explicitly identify their supported-adds-only scope. An accuracy score measures this simulator's prayer checks; idle ticks are not a calculation of prayer-point drain. Browser playback pauses when the tab is hidden.
+
+Meleers now burrow: a first check after 50 ticks, then repeatable checks 40–60 ticks apart, provided they cannot attack and have not hit in the last 15 ticks. The practice model uses six ticks underground, two stationary emergence ticks, and a six-tick delay from resurfacing to the next possible attack. Destination selection follows the established LoS tools and avoids terrain. Select a meleer under **Monsters** to edit **Next dig check**; imported positions start with 50 ticks because live dig timers are not captured. The exact pending destination and timers survive position links, stepping back and replay.
+
+Inferno Stats' existing saved-wave URLs can be pasted into the website. A prepared contribution adds this site to its **Wave Tool** selector; see [the integration notes](docs/INFERNO_STATS.md).
 
 ## Share format
 

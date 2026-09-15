@@ -6,7 +6,7 @@ export class ThreatMapCache {
   private maps = new Map<string, Uint8Array>();
   builds = 0;
   get(m: Mob, pillars: Scenario["pillars"]) {
-    const key = `${m.type}:${m.x}:${m.y}:${pillars.map(Number).join("")}`;
+    const key = `${m.type}:${m.x}:${m.y}:${pillars.map(Number).join("")}:${!!m.dig?.remaining}`;
     const cached = this.maps.get(key);
     if (cached) return cached;
     const map = new Uint8Array(WIDTH * HEIGHT);

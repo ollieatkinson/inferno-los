@@ -23,7 +23,7 @@ After `IL2-`, the payload is unpadded base64url (`A–Z`, `a–z`, `0–9`, `-`,
 1. One-byte flags: bits 0–1 are kind (`wave=0`, `current=1`, `custom=2`); bit 2 means wave present, bit 3 pillar HP present, bit 4 warnings present. Other bits are reserved and zero.
 2. Player tile, then one-byte standing pillar mask (west=1, north=2, south=4).
 3. Optional wave, followed by optional three pillar HP integers in west/north/south order.
-4. NPC count, followed by NPC records in array order: ID, one-byte type/flags, tile, then optional cooldown, pending check, attack count. The type occupies the low four bits; bits 4/5/6 indicate the three optional fields. A pending check is `(pendingTicks - 1) * 2 + style`, with magic=0, ranged=1.
+4. NPC count, followed by NPC records in array order: ID, one-byte type/flags, tile, then optional cooldown, pending check, attack count. The type occupies the low four bits; bits 4/5/6 indicate the three optional fields; bit 7 indicates optional meleer dig state. A pending check is `(pendingTicks - 1) * 2 + style`, with magic=0, ranged=1. When bit 7 is set, append unsigned varints for dig timer (0–60), check count, ticks since attack (capped at 15), underground ticks remaining (0–6), and stationary recovery ticks (0–2), followed by a packed destination tile only when underground ticks are nonzero. Dig state is allowed only on meleers. Existing plugin links omit bit 7 and retain the same bytes.
 5. If warnings are present: count, followed by each UTF-8 byte length and its bytes.
 6. Replay run count, followed by each run's value and repetition count. Value is `tile * 4 + prayer` with off=0, magic=1, ranged=2, melee=3. Repeated identical player/prayer inputs are stored as one run. Plugin snapshots write zero runs.
 7. Four-byte little-endian FNV-1a checksum of all preceding bytes (offset basis `0x811c9dc5`, prime `0x01000193`, arithmetic modulo 2³²). This detects accidental corruption; it is not authentication.
@@ -91,3 +91,9 @@ Import a bare code, a bracketed code, `?scout=<code>`, or `#[<code>]`:
 There are nine slots in north-to-south reading order. `o` is empty; `Y` bat, `B` blob, `X` melee, `R` ranger, `M` mager. Optional digits after monster letters are NPC-index ranks: rank 1 has the highest NPC index, and the lowest rank is omitted. A final six-digit suffix gives north/south/west pillar HP as two digits each. The example has a mager at slot 1, ranger at slot 2, a fallen north pillar, and full south/west pillars.
 
 The nine anchors are `(1,5), (22,5), (3,11), (23,12), (16,17), (5,23), (23,25), (1,28), (15,28)`. Legacy nine-character codes without ranks or HP also work. They have no known NPC order, so reading order is used. Export fails explicitly if the current scene cannot be represented, rather than silently dropping moved NPCs or unsupported types. Full position links are the canonical format for the new plugin because they also represent current locations, player position and non-spawn NPCs.
+
+## Inferno Stats import
+
+The existing Inferno Stats format supplies `bat`, `blob`, `melee`, `ranger`, and `mager` query parameters containing JSON arrays of southwest tile pairs, for example `mager=[[1,5]]&copyable`. These use the same 29×30 grid as this site. Optional `source=inferno-stats`, `wave=63`, and `location=INFERNO` parameters identify the capture; marked empty captures stay empty rather than generating a random wave. Fight Caves links, captured Jad/Zuk waves and invalid coordinates are rejected. An IL2 fragment has precedence.
+
+The imported player tile, standing pillars and NPC order are practice defaults and are identified as such. Nibblers are not supplied. Sharing an imported scene generates a normal IL2 link.

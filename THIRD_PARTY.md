@@ -27,6 +27,10 @@ The TypeScript and Java implementation was written for this project. These proje
 - [OSRS Wiki Inferno strategies](https://oldschool.runescape.wiki/w/Inferno/Strategies#Triple_Jads): wave 68 uses nine-tick Jad attack cycles, staggered three ticks apart; the single Jad uses eight ticks.
 - [RuneLite](https://github.com/runelite/runelite): current APIs, NPC/object identifiers and fixed-point line-of-sight coordinate conventions.
 
+Meleer dig timing references: [OSRS Wiki Jal-ImKot](https://oldschool.runescape.wiki/w/Inferno_melee) for the 50-tick first check, 40–60-tick later checks, recent-attack restriction and post-emergence delay; [Inferno Trainer's JalImKot](https://github.com/OldSchoolSDK/InfernoTrainer/blob/804c23f4e5cd50c1f13e93b502d6893555196769/src/content/inferno/js/mobs/JalImKot.ts) for six-tick underground/two-tick emergence phases; [iFreedive's LoS tool](https://github.com/ifreedive-osrs/ifreedive-osrs.github.io/blob/master/index.html) for ordered dig destination candidates. The practice model uses deterministic later checks and a legal-terrain fallback; these are modeling choices, not reconstructed live server state.
+
+[Inferno Stats](https://github.com/InfernoStats/InfernoStats) supplies the existing saved-wave URL format imported by `src/infernoStats.ts`.
+
 Colosseum-specific monsters and invocations have not been transplanted into Inferno.
 
 ## Build tooling

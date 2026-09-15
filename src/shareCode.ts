@@ -49,13 +49,22 @@ export function encodeCode(s: Scenario, steps: Replay["steps"] = []): string {
       types.indexOf(m.type) |
         (m.cooldown !== undefined ? 16 : 0) |
         (m.pendingStyle !== undefined ? 32 : 0) |
-        (m.attackCount !== undefined ? 64 : 0),
+        (m.attackCount !== undefined ? 64 : 0) |
+        (m.dig !== undefined ? 128 : 0),
     );
     uint(packTile([m.x, m.y]));
     if (m.cooldown !== undefined) uint(m.cooldown);
     if (m.pendingStyle !== undefined)
       uint((m.pendingTicks! - 1) * 2 + Number(m.pendingStyle === "range"));
     if (m.attackCount !== undefined) uint(m.attackCount);
+    if (m.dig) {
+      uint(m.dig.timer);
+      uint(m.dig.count);
+      uint(m.dig.sinceAttack);
+      uint(m.dig.remaining);
+      uint(m.dig.recovery);
+      if (m.dig.remaining) uint(packTile(m.dig.target!));
+    }
   }
   if (s.warnings !== undefined) {
     uint(s.warnings.length);
@@ -141,7 +150,7 @@ export function decodeCode(code: string): Replay {
     const id = uint(),
       tag = byte(),
       [x, y] = unpackTile(uint());
-    if (tag > 127 || (tag & 15) >= types.length) return fail();
+    if ((tag & 15) >= types.length) return fail();
     const mob: Scenario["mobs"][number] = { id, type: types[tag & 15], x, y };
     if (tag & 16) mob.cooldown = uint();
     if (tag & 32) {
@@ -151,6 +160,16 @@ export function decodeCode(code: string): Replay {
       mob.pendingTicks = Math.floor(pending / 2) + 1;
     }
     if (tag & 64) mob.attackCount = uint();
+    if (tag & 128) {
+      mob.dig = {
+        timer: uint(),
+        count: uint(),
+        sinceAttack: uint(),
+        remaining: uint(),
+        recovery: uint(),
+      };
+      if (mob.dig.remaining) mob.dig.target = unpackTile(uint());
+    }
     scenario.mobs.push(mob);
   }
   if (flags & 16) {

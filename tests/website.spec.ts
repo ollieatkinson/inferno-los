@@ -524,3 +524,86 @@ test("wave picker generates, retries and shares layouts, with pillar-free Jad wa
   await page.goto("/?wave=69");
   await expect(page.getByRole("status")).toContainText("Zuk");
 });
+
+test("meleers visibly dig, preserve a mid-dig share and delay prayer checks after emergence", async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto(
+    sceneUrl({
+      version: 1,
+      kind: "custom",
+      player: [16, 5],
+      pillars: [true, true, true],
+      mobs: [
+        {
+          id: 1,
+          type: "melee",
+          x: 20,
+          y: 7,
+          dig: {
+            timer: 1,
+            count: 0,
+            sinceAttack: 15,
+            remaining: 0,
+            recovery: 0,
+          },
+        },
+      ],
+    }),
+  );
+  const step = page.getByRole("button", { name: /Step \+1/ });
+  await step.click();
+  await expect(page.getByTestId("mob-1")).toContainText("DIG 6");
+  await expect(page.getByTestId("mob-1").locator("image")).toHaveAttribute(
+    "opacity",
+    "0.15",
+  );
+  await expect(page.locator("rect.tile.melee")).toHaveCount(0);
+  await expect(page.locator(".last-tick")).toContainText("Meleer burrows");
+  await page
+    .getByRole("button", { name: "Share position", exact: true })
+    .click();
+  const url = await page.evaluate(() => navigator.clipboard.readText());
+  await page.goto(url);
+  await expect(page.getByTestId("mob-1")).toContainText("DIG 6");
+  for (let i = 0; i < 6; i++) await step.click();
+  await expect(page.getByTestId("mob-1")).toContainText("EMERGE");
+  await expect(page.locator(".last-tick")).toContainText(
+    "attack delay 6 ticks",
+  );
+  await page.screenshot({
+    path: "test-results/meleer-emergence.png",
+    fullPage: true,
+  });
+  for (let i = 0; i < 5; i++) {
+    await step.click();
+    await expect(page.locator(".attack-ray")).toHaveCount(0);
+  }
+  await expect(page.locator(".next-prayer")).toContainText("Melee");
+  await page
+    .getByRole("button", { name: "Protect from Melee", exact: true })
+    .click();
+  await step.click();
+  await expect(page.locator(".last-tick")).toContainText("Protected");
+  await expect(
+    page.locator(".tape").getByTitle("Meleer emerges"),
+  ).toHaveCount(1);
+});
+
+test("Inferno Stats links import captured tiles instead of generating a random wave", async ({
+  page,
+}) => {
+  await page.goto(
+    "/?source=inferno-stats&wave=63&location=INFERNO&mager=[[1,5]]&copyable",
+  );
+  await expect(page.locator(".board-header")).toContainText("Wave 63");
+  await expect(page.locator('[data-testid^="mob-"]')).toHaveCount(1);
+  await expect(
+    page.getByTestId("mob-1").locator("rect").first(),
+  ).toHaveAttribute("x", "22");
+  await expect(
+    page.getByText(/Inferno Stats supplies monster spawns only/),
+  ).toBeVisible();
+});

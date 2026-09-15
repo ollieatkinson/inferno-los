@@ -77,7 +77,8 @@ const Tiles = memo(
         m.id === b.mobs[i].id &&
         m.type === b.mobs[i].type &&
         m.x === b.mobs[i].x &&
-        m.y === b.mobs[i].y,
+        m.y === b.mobs[i].y &&
+        !!m.dig?.remaining === !!b.mobs[i].dig?.remaining,
     ),
 );
 interface Props {
@@ -329,6 +330,7 @@ export function Arena({
                   fillOpacity=".06"
                   stroke={n.color}
                   strokeWidth={selected === m.id ? 3 : 1}
+                  strokeDasharray={m.dig?.remaining ? "5 4" : undefined}
                 />
                 {m.type === "jad" ? (
                   <JadSprite
@@ -347,6 +349,7 @@ export function Arena({
                 ) : (
                   <image
                     href={icon(m.type)}
+                    opacity={m.dig?.remaining ? 0.15 : 1}
                     x={cx - imageSize / 2}
                     y={cy - imageSize / 2}
                     width={imageSize}
@@ -362,7 +365,11 @@ export function Arena({
                   height="4"
                   fill={n.color}
                 />
-                {(attack || cue || pending) && (
+                {(attack ||
+                  cue ||
+                  pending ||
+                  m.dig?.remaining ||
+                  frame?.digs.some((d) => d.id === m.id)) && (
                   <g transform={upright(cx, cy)}>
                     <rect
                       x={cx - 25}
@@ -380,13 +387,19 @@ export function Arena({
                       fontWeight="bold"
                       textAnchor="middle"
                     >
-                      {attack
-                        ? "ATTACK"
-                        : cue?.kind === "scan"
-                          ? "SCAN"
-                          : pending
-                            ? `IN ${m.pendingTicks}`
-                            : "CUE"}
+                      {m.dig?.remaining
+                        ? `DIG ${m.dig.remaining}`
+                        : frame?.digs.some(
+                              (d) => d.id === m.id && d.phase === "emerge",
+                            )
+                          ? "EMERGE"
+                          : attack
+                            ? "ATTACK"
+                            : cue?.kind === "scan"
+                              ? "SCAN"
+                              : pending
+                                ? `IN ${m.pendingTicks}`
+                                : "CUE"}
                     </text>
                   </g>
                 )}

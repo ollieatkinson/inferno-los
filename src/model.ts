@@ -113,6 +113,14 @@ export const NPCS = {
   },
 } as const;
 export type NpcType = keyof typeof NPCS;
+export interface DigState {
+  timer: number;
+  count: number;
+  sinceAttack: number;
+  remaining: number;
+  recovery: number;
+  target?: Tile;
+}
 export interface Mob {
   id: number;
   type: NpcType;
@@ -122,6 +130,7 @@ export interface Mob {
   pendingStyle?: Prayer;
   pendingTicks?: number;
   attackCount?: number;
+  dig?: DigState;
 }
 export interface Scenario {
   version: 1;

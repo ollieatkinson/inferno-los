@@ -18,6 +18,7 @@ import { encodeScout } from "./scout";
 import { Simulation } from "./simulation";
 import { DRILLS, drillScenario, score, type Drill } from "./trainer";
 import { waveScenario } from "./waves";
+import { initialDig } from "./dig";
 import "./style.css";
 
 function usePreference<T extends string | boolean>(key: string, fallback: T) {
@@ -193,6 +194,7 @@ function App() {
           pendingStyle: __,
           pendingTicks: ___,
           attackCount: ____,
+          dig: _____,
           ...m
         }) => m,
       ),
@@ -781,7 +783,9 @@ function App() {
                       : "Missed prayer ✕"
                     : frame.cues.length
                       ? "Watch the cue"
-                      : "No attack"}
+                      : frame.digs.length
+                        ? "Meleer digging"
+                        : "No attack"}
                 </strong>
                 <div>
                   {frame.attacks.map((a) => (
@@ -797,6 +801,13 @@ function App() {
                     <span key={c.id}>
                       {c.kind === "scan" ? "Blob scanned" : "Jad winds up"} →{" "}
                       <PrayerImage prayer={c.style} /> in 3 ticks
+                    </span>
+                  ))}
+                  {frame.digs.map((d) => (
+                    <span key={`dig-${d.id}`}>
+                      {d.phase === "burrow"
+                        ? "Meleer burrows · emerges in 6 ticks"
+                        : "Meleer emerges · attack delay 6 ticks"}
                     </span>
                   ))}
                 </div>
@@ -858,7 +869,11 @@ function App() {
                       <small>#{m.id}</small>
                     </span>
                     <span className="mob-status">
-                      {m.pendingStyle ? (
+                      {m.dig?.remaining ? (
+                        `Digging · ${m.dig.remaining} ticks`
+                      ) : m.dig?.recovery ? (
+                        `Emerging · ${m.cooldown} ticks`
+                      ) : m.pendingStyle ? (
                         <>
                           <PrayerImage prayer={m.pendingStyle} />
                           {m.pendingTicks} ticks
@@ -867,6 +882,8 @@ function App() {
                         "Pillar"
                       ) : canAttack(m, scenario.player, scenario.pillars) ? (
                         `Attack in ${Math.max(1, m.cooldown ?? 0)}`
+                      ) : m.type === "melee" ? (
+                        `Dig check in ${m.dig?.timer ?? 50}`
                       ) : (
                         "Blocked"
                       )}
@@ -907,6 +924,38 @@ function App() {
                     />{" "}
                     ticks
                   </label>
+                  {focused.type === "melee" && (
+                    <label>
+                      Next dig check
+                      <input
+                        type="number"
+                        aria-label="Next dig check"
+                        min="0"
+                        max="60"
+                        value={focused.dig?.timer ?? 50}
+                        onChange={(e) => {
+                          const timer = Number(e.target.value);
+                          if (
+                            !Number.isInteger(timer) ||
+                            timer < 0 ||
+                            timer > 60
+                          )
+                            return;
+                          const id = focused.id;
+                          loadScene({
+                            ...scenario,
+                            mobs: scenario.mobs.map((m) =>
+                              m.id === id
+                                ? { ...m, dig: { ...initialDig(), timer } }
+                                : m,
+                            ),
+                          });
+                          setSelected(id);
+                        }}
+                      />{" "}
+                      ticks
+                    </label>
+                  )}
                   <button onClick={() => remove(focused.id)}>
                     Remove monster
                   </button>
@@ -960,7 +1009,8 @@ function App() {
                           .filter((m) => m.type !== "nibbler")
                           .map((m) => {
                             const a = f?.attacks.find((a) => a.id === m.id),
-                              cue = f?.cues.find((c) => c.id === m.id);
+                              cue = f?.cues.find((c) => c.id === m.id),
+                              dig = f?.digs.find((d) => d.id === m.id);
                             return (
                               <td
                                 key={m.id}
@@ -969,13 +1019,23 @@ function App() {
                                     ? a.style === f.prayer
                                       ? "covered"
                                       : "missed"
-                                    : cue
+                                    : cue || dig
                                       ? "scan"
                                       : ""
                                 }
                               >
                                 {a ? (
                                   <PrayerImage prayer={a.style} />
+                                ) : dig ? (
+                                  <span
+                                    title={
+                                      dig.phase === "burrow"
+                                        ? "Meleer burrows"
+                                        : "Meleer emerges"
+                                    }
+                                  >
+                                    {dig.phase === "burrow" ? "↓" : "↑"}
+                                  </span>
                                 ) : cue ? (
                                   <span
                                     title={
@@ -1024,9 +1084,13 @@ function App() {
           Current-position links do not contain live attack cooldowns. Set
           initial delays to practice a known stack. Blobs scan your prayer and
           attack three ticks later; Jad cues precede the prayer check by three
-          ticks. Random styles are repeatable for practice. This is a LoS and
-          prayer tool, not a full combat simulator: melee digs, resurrections,
-          nibbler AI, damage and Zuk/shield mechanics are not modeled.
+          ticks. Random styles are repeatable for practice. Meleers check for a
+          dig after 50 ticks, then every 40–60 ticks, provided they cannot
+          attack and have not hit in the last 15 ticks. Burrowing takes six
+          ticks; resurfacing starts a six-tick attack delay. The dig schedule is
+          repeatable for practice; imported positions start a fresh timer unless
+          edited. This is not a full combat simulator: resurrections, nibbler
+          AI, damage and Zuk/shield mechanics are not modeled.
         </p>
         <p>
           Scouter codes describe the nine initial spawn slots, with optional
