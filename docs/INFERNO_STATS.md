@@ -1,6 +1,6 @@
 # Inferno Stats integration
 
-[Inferno Stats PR #20](https://github.com/InfernoStats/InfernoStats/pull/20) adds **Inferno Tips** to the existing **Wave Tool** configuration and provides current-position and wave-start links. The contribution is on [our fork's add-inferno-tips branch](https://github.com/ollieatkinson/InfernoStats/tree/add-inferno-tips), with the implementation from `d6cd017` restored at `0dfbd13`. The local patch is `build/inferno-stats-link.patch` (generated, not committed).
+[Inferno Stats PR #20](https://github.com/InfernoStats/InfernoStats/pull/20) adds **Inferno Tips** to the existing **Wave Tool** configuration and provides current-position and wave-start links. The contribution is on [our fork's add-inferno-tips branch](https://github.com/ollieatkinson/InfernoStats/tree/add-inferno-tips), at commit `d6cd017`. The local patch is `build/inferno-stats-link.patch` (generated, not committed).
 
 ## Behaviour
 
