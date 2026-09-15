@@ -105,18 +105,7 @@ export function decodeLink(input: string): Replay | null {
   if (scout)
     return { scenario: validateScenario(decodeScout(scout)), steps: [] };
   if (!url.hash && !url.search) return null;
-  if (!url.hash.startsWith("#v1="))
-    throw new Error(
-      "Unrecognised link. Use an Inferno LoS share link or code.",
-    );
-  if (url.hash.length > 100000) throw new Error("This link is too large.");
-  let data;
-  try {
-    data = JSON.parse(decodeURIComponent(url.hash.slice(4)));
-  } catch {
-    throw new Error("The link is incomplete or malformed.");
-  }
-  return validateReplay(data);
+  throw new Error("Unrecognised link. Use an Inferno LoS share link or code.");
 }
 function validateReplay(data: unknown): Replay {
   if (!data || typeof data !== "object")

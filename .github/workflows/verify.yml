@@ -1,4 +1,4 @@
-name: Verify website and plugin
+name: Verify website
 on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
@@ -11,15 +11,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - run: ./gradlew test jar --no-daemon
-        working-directory: plugin
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
       - uses: actions/upload-artifact@v4
@@ -28,6 +22,4 @@ jobs:
           name: verification
           path: |
             test-results/
-            plugin/build/reports/tests/
-            plugin/build/libs/
             dist/

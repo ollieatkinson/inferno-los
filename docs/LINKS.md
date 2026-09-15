@@ -10,7 +10,7 @@ https://host/path/#IL2-FKEBBT8CBgPyAikE_AEAANDSVrY
 
 The example represents wave 63 with player `(16,5)`, west/south pillars standing, ranger ID 6 at `(22,12)` and mager ID 41 at `(20,8)`. Its code is 31 characters, compared with 346 for the equivalent legacy JSON fragment. Codes are case-sensitive. The input accepts a full link, a bare `IL2-…` code, or `#IL2-…`. **Share position** copies a link; **More → Copy share code** copies just the code. Replay links use the same format.
 
-Each code contains its complete data; no shortening service or database is involved. It is reversible encoding, not encryption. Existing v1 JSON links and Scouter codes remain supported. Deploy an IL2-capable website before distributing the updated plugin.
+Each code contains its complete data; no shortening service or database is involved. It is reversible encoding, not encryption. IL2 is the first-release share format. Unreleased JSON links are not supported. Scouter codes remain a separate import/export feature.
 
 ### Binary layout
 
@@ -24,17 +24,13 @@ After `IL2-`, the payload is unpadded base64url (`A–Z`, `a–z`, `0–9`, `-`,
 6. Replay run count, followed by each run's value and repetition count. Value is `tile * 4 + prayer` with off=0, magic=1, ranged=2, melee=3. Repeated identical player/prayer inputs are stored as one run. Plugin snapshots write zero runs.
 7. Four-byte little-endian FNV-1a checksum of all preceding bytes (offset basis `0x811c9dc5`, prime `0x01000193`, arithmetic modulo 2³²). This detects accidental corruption; it is not authentication.
 
-Permanent NPC type IDs 0–10 are `bat`, `blob`, `melee`, `ranger`, `mager`, `nibbler`, `mageBlob`, `rangeBlob`, `meleeBlob`, `jad`, `healer`. These IDs must not be reordered. `src/shareCode.ts` implements both directions; `plugin/.../ShareCode.java` writes current/wave snapshots. Both languages assert the example above as a fixed compatibility vector.
+Permanent NPC type IDs 0–10 are `bat`, `blob`, `melee`, `ranger`, `mager`, `nibbler`, `mageBlob`, `rangeBlob`, `meleeBlob`, `jad`, `healer`. These IDs must not be reordered. `src/shareCode.ts` implements both directions; [ShareCode.java in the plugin repository](https://github.com/ollieatkinson/inferno-los-plugin/blob/trunk/src/main/java/com/infernolos/ShareCode.java) writes current/wave snapshots. Both languages assert the example above as a fixed compatibility vector.
 
-Decoded data is subjected to the same game-state and replay validation as v1. Limits are 64 NPCs, 64 bounded notes, 256 expanded replay ticks and 100,000 encoded characters. Unknown flags/types, truncation, checksum errors, invalid footprints and invalid attack state are rejected.
+Decoded data is validated before it becomes a game state or replay. Limits are 64 NPCs, 64 bounded notes, 256 expanded replay ticks and 100,000 encoded characters. Unknown flags/types, truncation, checksum errors, invalid footprints and invalid attack state are rejected.
 
-## Legacy JSON (v1)
+## Decoded scenario
 
-Previously generated full positions and replays use:
-
-```text
-https://host/path/#v1=<percent-encoded UTF-8 JSON>
-```
+The IL2 payload decodes into the following in-memory model. The `version: 1` field identifies this model, independently of the binary transport prefix; the JSON itself is not accepted as a share link.
 
 A fragment is not sent to the web server. The plugin contains no character name, account identifier or world number in the payload.
 
@@ -52,7 +48,7 @@ A fragment is not sent to the web server. The plugin contains no character name,
 - `kind`: `wave`, `current` or `custom`. `wave` is optional, in 1–69.
 - `player`: X/Y in the 29×30 grid, X eastward and Y southward.
 - `pillars`: west, north, south. Optional `pillarHp` uses that same order. Zero HP means fallen.
-- NPC `x,y`: southwest footprint anchor. Size extends east and north. Type keys and sizes are defined in `src/model.ts` and `plugin/.../NpcKind.java`.
+- NPC `x,y`: southwest footprint anchor. Size extends east and north. Type keys and sizes are defined in `src/model.ts` and [NpcKind.java](https://github.com/ollieatkinson/inferno-los-plugin/blob/trunk/src/main/java/com/infernolos/NpcKind.java).
 - `id`: RuneLite NPC index, or a stable synthetic index for custom/scouted scenes. The simulation processes ascending IDs. Scouter imports preserve relative numeric indices.
 - Optional `cooldown`: modeled ticks until next attack (0 means ready). The plugin deliberately omits this unknown state.
 - Optional `pendingStyle` plus `pendingTicks`: queued blob or Jad prayer check, with 1–3 ticks remaining. `attackCount` preserves reproducible future style choices in website snapshots.

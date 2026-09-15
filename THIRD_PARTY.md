@@ -30,6 +30,6 @@ Colosseum-specific monsters and invocations have not been transplanted into Infe
 
 ## Build tooling
 
-The Gradle wrapper scripts and JAR in `plugin/` are generated Gradle components obtained from the Inferno Scouter project. Their original copyright/SPDX notices remain intact; Gradle is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). A copy is included at `plugin/gradle/LICENSE`.
+npm dependencies retain their respective upstream licenses. The dependency graph is pinned by `package-lock.json`.
 
-Java dependencies and npm dependencies retain their respective upstream licenses. The npm dependency graph is pinned by `package-lock.json`.
+The separate [plugin repository's attribution](https://github.com/ollieatkinson/inferno-los-plugin/blob/trunk/THIRD_PARTY.md) covers its Java dependencies, Gradle wrapper and sidebar icon.

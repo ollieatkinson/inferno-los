@@ -67,8 +67,9 @@ describe("compact share codes", () => {
     const code = encodeShareCode(scenario, steps);
     expect(code.length).toBeLessThan(100);
     expect(decodeLink(code)).toEqual({ scenario, steps });
-    const legacy = `https://example.org/#v1=${encodeURIComponent(JSON.stringify({ scenario, steps }))}`;
-    expect(decodeLink(legacy)).toEqual(decodeLink(code));
+    expect(
+      decodeLink(encodeLink(scenario, "https://example.org/", steps)),
+    ).toEqual(decodeLink(code));
   });
   it("rejects corruption, truncation and invalid scenes or replays even with valid checksums", () => {
     const scenario = exampleScenario(),

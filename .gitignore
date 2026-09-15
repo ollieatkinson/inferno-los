@@ -5,3 +5,4 @@ playwright-report/
 .gradle/
 build/
 *.log
+.wrangler/

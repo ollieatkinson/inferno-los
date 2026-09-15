@@ -1,4 +1,4 @@
-# Inferno LoS website and RuneLite plugin
+# Inferno LoS product plan
 
 This tracks the full request, including follow-up messages. A checked item means it has been implemented and verified; code existing on disk alone does not count.
 
@@ -20,7 +20,7 @@ This tracks the full request, including follow-up messages. A checked item means
 - [x] Show current LoS/range and pillar blocking for Inferno monsters.
 - [x] Support standing/destroyed pillars in the editor and shared snapshots.
 - [x] Share arbitrary current positions, wave starts and recorded replays as links.
-- [x] Replace verbose JSON share links with compact, self-contained `IL2-…` codes in the website and RuneLite plugin; support copying/pasting bare codes, keep legacy links working, and verify corruption handling and Java/browser compatibility.
+- [x] Replace verbose JSON share links with compact, self-contained `IL2-…` codes in the website and RuneLite plugin; support copying/pasting bare codes and verify corruption handling and Java/browser compatibility. Unreleased JSON-link support was removed at the user's request when splitting repositories.
 - [x] Import Inferno Scouter spawn codes, including optional NPC ranks and north/south/west pillar HP. Export compatible codes when a scene fits that format.
 - [x] Add a prayer trainer with clickable prayers, keyboard controls, tick timing, practice drills, and feedback/accuracy/streak statistics.
 - [x] Add Triple Jad practice with three staggered Jads and a nine-tick cycle; remove pillars and their controls from both Jad drills.
@@ -32,6 +32,7 @@ This tracks the full request, including follow-up messages. A checked item means
 - [x] Capture NPC coordinates on spawn, preserve wave history after leaving, and start fresh on a new run.
 - [x] Capture current player/NPC positions on the client thread when requested; carry instance coordinates, NPC order and pillar state correctly into the website.
 - [x] Keep the plugin independently buildable, so it can become its own repository if desired.
+- [x] Split into [the website](https://github.com/ollieatkinson/inferno-los) and [the plugin](https://github.com/ollieatkinson/inferno-los-plugin), each with independent CI, tool setup and docs. Keep the IL2 contract and fixtures consistent without requiring sibling checkouts for ordinary tests.
 - [x] Configure the website URL; document local use and deployment.
 - [x] Verify the full Java-generated-link-to-browser path, not just each component separately.
 
@@ -41,7 +42,9 @@ This tracks the full request, including follow-up messages. A checked item means
 - [ ] Authenticate Cloudflare, deploy the site and verify the production URL.
 - [ ] Set the plugin's default website URL to the verified production address.
 - [ ] Complete a logged-in Inferno playtest of current positions and wave captures.
-- [ ] Publish the standalone plugin repository and submit its tested commit to the Plugin Hub.
+- [x] Publish the standalone plugin source repository.
+- [ ] Submit a tested plugin commit to the Plugin Hub after hosting and live validation.
+- [x] Configure static asset hosting for the user's Cloudflare Workers setup screen (`npm run build`, `npx wrangler deploy`, `trunk`).
 
 ## Working preferences
 
@@ -60,10 +63,10 @@ This tracks the full request, including follow-up messages. A checked item means
 - 12 Java tests pass: capture lifecycle, immutable snapshots, URI generation, NPC/region mapping, rotated instance footprints, pillar objects, and sidebar actions.
 - 12 browser tests pass: both kinds of dragging, all-monster LoS during selection and dragging, removal, storage preferences, compact share codes, Scouter codes, replay navigation, trainer timing/scoring, Jad animations and pillar removal, responsive layout, compiled Java link import, and nine-monster drag performance.
 - The nine-monster drag test's two-animation-frame samples measured 33.3 ms median and 33.5 ms p95 (90 samples on this machine). This is a local measurement, not a hardware-independent frame-rate guarantee. A cache test verifies that moving the player rebuilds no NPC maps and moving one NPC rebuilds only its map.
-- The plugin JAR is built at `plugin/build/libs/inferno-los-plugin-0.1.0.jar`. The standalone plugin has its own Gradle wrapper, README, license and attribution.
+- The plugin JAR is built at `build/libs/inferno-los-plugin-0.1.0.jar` inside the separate plugin checkout. That repository has its own Gradle wrapper, Java 17 setup, CI, README, license and attribution.
 - README, link-contract documentation, attribution, CI and a manually triggered Pages workflow are present.
 - Isolated RuneLite startup under Xvfb succeeded: `Plugin InfernoLosPlugin is now running` and all four event subscriptions registered. Startup/shutdown on RuneLite's EDT also has a regression test.
-- No deployment or Plugin Hub publication was requested; neither has been performed. Automated plugin/browser integration is verified; an actual logged-in Inferno playtest has not been performed.
+- Source repositories are published separately. Cloudflare deployment is being configured by the user; no hosted deployment or Plugin Hub publication has been verified. Automated plugin/browser integration is verified; an actual logged-in Inferno playtest has not been performed.
 - Remaining validation and release caveats are documented rather than represented as completed game mechanics.
 
 ## Completed execution order
@@ -106,7 +109,7 @@ This tracks the full request, including follow-up messages. A checked item means
 | Scouter codes and full links                           | `src/trainer.test.ts`, `src/engine.test.ts`, browser imports and Java-generated URL fixture                                              |
 | Trainer, scans, delayed Jad checks, scoring, timing    | Unit fixtures plus full 60-tick browser drill; current-stack preservation browser test                                                   |
 | Performance                                            | `ThreatMapCache` rebuild-count test; RAF-batched pointer handler; measured populated-scene browser test                                  |
-| Plugin/sidebar integration                             | `plugin/.../IntegrationTest.java`, `PanelTest.java`, generated URL opened by Playwright                                                  |
+| Plugin/sidebar integration                             | Separate plugin repository's `IntegrationTest.java`, `PanelTest.java`; committed/fresh Java fixtures opened by Playwright               |
 | Local use and independently buildable plugin           | Successful Vite build, Gradle test/JAR; root and plugin READMEs                                                                          |
 | Reproducible validation/release path                   | `package-lock.json`, pinned RuneLite API, `.github/workflows/verify.yml`, manual Pages workflow                                          |
 

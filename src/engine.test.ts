@@ -101,7 +101,7 @@ describe("shared links", () => {
   });
   it("rejects malformed, out of bounds, unknown-type, duplicate-id and oversized links", () => {
     expect(() => decodeLink("https://example.org/#v1=%7B")).toThrow(
-      "malformed",
+      "Unrecognised",
     );
     const s = exampleScenario();
     expect(() => validateScenario({ ...s, version: 2 })).toThrow("version");
@@ -117,7 +117,7 @@ describe("shared links", () => {
     ).toThrow();
     expect(() => validateScenario({ ...s, player: [17, 5] })).toThrow("pillar");
     expect(() =>
-      decodeLink("https://example.org/#v1=" + "a".repeat(100001)),
+      decodeLink("https://example.org/#IL2-" + "a".repeat(100001)),
     ).toThrow("large");
   });
 });

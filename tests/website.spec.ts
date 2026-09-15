@@ -1,4 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { encodeLink } from "../src/links";
+import type { Scenario } from "../src/model";
+const sceneUrl = (scene: unknown) =>
+  encodeLink(scene as Scenario, "http://127.0.0.1:5173/");
 const snapshot = {
   version: 1,
   kind: "wave",
@@ -23,7 +27,7 @@ test("plugin snapshots load, stepping shows the prayer and replay opens in the s
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/#v1=" + encodeURIComponent(JSON.stringify(snapshot)));
+  await page.goto(sceneUrl(snapshot));
   await expect(page.locator(".board-header")).toContainText("Wave 63");
   await page.getByRole("button", { name: "North ✓" }).click();
   await expect(page.locator(".next-prayer")).toContainText("Missiles");
@@ -106,7 +110,7 @@ test("copies compact links and bare codes, reloads them, and reports damaged cod
   context,
 }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.goto("/#v1=" + encodeURIComponent(JSON.stringify(snapshot)));
+  await page.goto(sceneUrl(snapshot));
   await page
     .getByRole("button", { name: "Share position", exact: true })
     .click();
@@ -205,9 +209,13 @@ test("right-hand prayer and ticks stay beside the arena on desktop", async ({
   });
 });
 
-test("opens a link emitted by the compiled Java plugin", async ({ page }) => {
+test("opens the RuneLite plugin contract fixture", async ({ page }) => {
   const { readFile } = await import("node:fs/promises");
-  const url = await readFile("plugin/build/fixtures/wave-url.txt", "utf8");
+  const url = await readFile(
+    process.env.INFERNO_PLUGIN_FIXTURE_PATH ??
+      "tests/fixtures/plugin-wave-url.txt",
+    "utf8",
+  );
   expect(new URL(url).hash).toBe("#IL2-FKEBBT8CBgPyAikE_AEAANDSVrY");
   await page.goto(url);
   await expect(page.locator(".board-header")).toContainText("Wave 63");
@@ -236,7 +244,7 @@ test("all monsters keep their LoS when one is selected and dragged", async ({
       { id: 2, type: "ranger", x: 22, y: 25 },
     ],
   };
-  await page.goto("/#v1=" + encodeURIComponent(JSON.stringify(scene)));
+  await page.goto(sceneUrl(scene));
   const rangedTile = page.locator('.arena rect.tile[x="460"][y="540"]');
   const overlapTile = page.locator('.arena rect.tile[x="460"][y="400"]');
   const magicTile = page.locator('.arena rect.tile[x="40"][y="0"]');
@@ -284,7 +292,7 @@ test("nine-monster drag stays responsive with LoS enabled", async ({
       y,
     })),
   };
-  await page.goto("/#v1=" + encodeURIComponent(JSON.stringify(scene)));
+  await page.goto(sceneUrl(scene));
   await expect(page.getByTestId("mob-9")).toBeVisible();
   const metrics = await page.evaluate(async () => {
     const svg = document.querySelector(".arena")!,
@@ -413,7 +421,7 @@ test("Jad drills have no pillars and animate real attack poses with pause and st
 test("current-stack training preserves the scene imported in Explore", async ({
   page,
 }) => {
-  await page.goto("/#v1=" + encodeURIComponent(JSON.stringify(snapshot)));
+  await page.goto(sceneUrl(snapshot));
   await page
     .getByRole("button", { name: "Prayer trainer", exact: true })
     .click();

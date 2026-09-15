@@ -1,6 +1,8 @@
 # Inferno LoS
 
-An Inferno line-of-sight playground and prayer trainer, with a RuneLite sidebar for wave-start and current-position links.
+An Inferno line-of-sight playground and prayer trainer. This repository contains the static React + TypeScript website, built with Vite. Simulation, LoS, training and share codes run entirely in the browser; there is no backend.
+
+The companion RuneLite sidebar lives in [inferno-los-plugin](https://github.com/ollieatkinson/inferno-los-plugin).
 
 ## Run the website
 
@@ -17,35 +19,25 @@ Open **http://localhost:5173/**. No account or backend is needed. All scene and 
 - **Space** steps one game tick. The controls, prayer choices and vertical attack timeline sit beside the arena.
 - **1 / 2 / 3** select magic / ranged / melee protection; **0** turns prayer off. **P** plays or pauses, **R** resets, and the arrows move the player.
 - Toggle pillars, LoS shading and spawn tiles. Orientation and light/dark mode are remembered.
-- Paste a position/replay link, compact `IL2-…` share code or Inferno Scouter code into the input. **Share position** copies a compact link including current NPC positions and modeled attack state. **More → Copy share code** copies just the code; **Copy replay link** includes recorded player movement and prayer choices. Existing JSON links still load.
+- Paste a position/replay link, compact `IL2-…` share code or Inferno Scouter code into the input. **Share position** copies a compact link including current NPC positions and modeled attack state. **More → Copy share code** copies just the code; **Copy replay link** includes recorded player movement and prayer choices.
 - **Prayer trainer** offers ranger/mager, blob/mager, Jad, Triple Jad, or the current stack. Both Jad drills remove pillars and use actual stomp/rear-up animation frames. Triple Jad staggers attacks three ticks apart on nine-tick cycles. Play a 60-tick drill at game speed (600 ms), or slow it down. Scores show protected/missed attacks, streaks, and prayer-off idle ticks. Hide hints to practise reading the animations.
 
 ## RuneLite plugin
 
-The [standalone Gradle project](plugin/README.md) is in `plugin/`. It builds against RuneLite 1.12.38 and can be moved into a separate repository without restructuring.
+Clone [inferno-los-plugin](https://github.com/ollieatkinson/inferno-los-plugin) alongside this repository. Its README covers Java 17 setup, development-client launch and Plugin Hub submission. The website does not require Java or the plugin checkout to build or test.
 
-```sh
-cd plugin
-./gradlew run
-```
-
-Requires a JDK 17 installation. This launches a development RuneLite client with the plugin loaded. Enable **Inferno LoS**, open its sidebar, and leave the website URL set to `http://localhost:5173/` while developing locally.
-
-With mise installed, the repository's `mise.toml` selects Java 17: run `mise install` once, then `mise exec -- plugin/gradlew -p plugin run` from the repository root. This also works in shells where Java is not already on `PATH`.
-
-The sidebar captures NPC coordinates from spawn events, stores a button per wave, and keeps those buttons after leaving the Inferno. **Current LoS** captures current positions when clicked. Both actions have copy buttons. The next run's wave 1 clears the previous history. History is held for the current plugin session.
+The plugin's **Current LoS** button opens a snapshot of player/NPC positions and pillars on this website. Wave-start links remain available after leaving the Inferno. Set the plugin's **Website URL** to `http://localhost:5173/` during development, then to the Cloudflare production address after deployment.
 
 ## Tests
 
 ```sh
 npm test
 npm run build
-cd plugin && ./gradlew test jar && cd ..
 npx playwright install chromium
 npm run test:browser
 ```
 
-Run Java tests before browser tests: they generate the link fixture used to verify the real Java-to-browser contract. To use an existing Chromium binary, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
+Website tests use a committed plugin contract fixture, so they run independently. Both repositories assert the same IL2 code. For a fresh cross-repository check, build the plugin and run the browser tests with `INFERNO_PLUGIN_FIXTURE_PATH=../inferno-los-plugin/build/fixtures/wave-url.txt`. To use an existing Chromium binary, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
 
 Browser tests cover dragging both player and NPCs, double-click deletion, persisted preferences, Scouter codes, replay navigation, trainer timing/scoring, desktop/mobile layout, a Java-generated snapshot, and populated-scene drag performance. The LoS engine caches per-monster maps and batches pointer movement with animation frames.
 
@@ -63,9 +55,9 @@ See [docs/LINKS.md](docs/LINKS.md) for the versioned plugin/website contract and
 
 ## Deploy
 
-See [Cloudflare Pages and RuneLite release](docs/RELEASE.md) for hosting settings, local plugin testing, and the Plugin Hub submission process.
+See [Cloudflare hosting and RuneLite release](docs/RELEASE.md) for hosting settings, local plugin testing, and the Plugin Hub submission process.
 
-`npm run build` produces a static `dist/` directory that can be served on any static host. Relative asset paths support subdirectory hosting. The optional GitHub Pages workflow can be run manually after creating a repository and enabling Pages with GitHub Actions. Set the plugin's **Website URL** to that deployed address.
+`npm run build` produces a static `dist/` directory that can be served on any static host. Relative asset paths support subdirectory hosting. For Cloudflare Workers, build with `npm run build` and deploy with `npx wrangler deploy`; `wrangler.jsonc` configures the static assets. Cloudflare Pages can use the same build command and output directory `dist`. An optional manually triggered GitHub Pages workflow is also included. Set the plugin's **Website URL** to the deployed address.
 
 No site has been published and the plugin has not been submitted to the Plugin Hub. Automated verification includes a compiled plugin, Swing sidebar actions, mocked RuneLite scene capture, browser integration, and an isolated real RuneLite startup; it does not constitute an in-game playtest.
 
