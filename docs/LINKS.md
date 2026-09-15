@@ -1,5 +1,9 @@
 # Link contract
 
+## Wave practice links
+
+`https://los.inferno.tips/?wave=63` generates a fresh practice layout for that wave. Whole wave numbers 1–68 are supported; 67–68 use the existing Jad drills with no pillars. Wave 69 is rejected because Zuk is not simulated. Generated scenes use `kind: custom` with their wave number, distinguishing practice setups from captured wave starts. **Share position** converts the generated layout to an IL2 link with exact positions, removing the wave query. An IL2 fragment takes precedence if a URL contains both forms.
+
 ## Compact share codes (IL2)
 
 New website and RuneLite links use a compact URL fragment:

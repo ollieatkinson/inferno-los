@@ -17,6 +17,7 @@ import { decodeLink, encodeLink, encodeShareCode } from "./links";
 import { encodeScout } from "./scout";
 import { Simulation } from "./simulation";
 import { DRILLS, drillScenario, score, type Drill } from "./trainer";
+import { waveScenario } from "./waves";
 import "./style.css";
 
 function usePreference<T extends string | boolean>(key: string, fallback: T) {
@@ -97,7 +98,8 @@ function App() {
     [hints, setHints] = useState(true),
     [drill, setDrill] = useState<Drill>("alternating");
   const [finished, setFinished] = useState(false);
-  const jadTraining = trainer && (drill === "jad" || drill === "triple-jad");
+  const [waveInput, setWaveInput] = useState(String(scenario.wave ?? 63));
+  const jadTraining = scenario.wave === 67 || scenario.wave === 68;
   const stepRef = useRef(() => {}),
     playRef = useRef(playing);
   const tapeRef = useRef<HTMLDivElement>(null);
@@ -163,6 +165,23 @@ function App() {
     setReplay([]);
     setReplayTick(0);
     setPrayer(null);
+    if (s.wave !== undefined) setWaveInput(String(s.wave));
+  }
+  function spawnWave() {
+    try {
+      const s = waveScenario(Number(waveInput));
+      setTrainer(false);
+      setMode("player");
+      studyScene.current = structuredClone(s);
+      loadScene(s);
+      setMessage(
+        s.wave! < 67
+          ? "Random practice spawn. Spawn wave reshuffles; Reset retries this layout. Nibblers are shown, but their movement and pillar damage are not simulated."
+          : "Jad practice setup. Use Space to step or open Prayer trainer → My current stack.",
+      );
+    } catch (e) {
+      setMessage((e as Error).message);
+    }
   }
   function edit(s: Scenario) {
     loadScene({
@@ -384,6 +403,27 @@ function App() {
           {theme === "light" ? "☾ Dark mode" : "☀ Light mode"}
         </button>
       </header>
+      <form
+        className="wave-picker"
+        onSubmit={(e) => {
+          e.preventDefault();
+          spawnWave();
+        }}
+      >
+        <label htmlFor="wave-number">Wave</label>
+        <input
+          id="wave-number"
+          type="number"
+          min="1"
+          max="68"
+          step="1"
+          required
+          value={waveInput}
+          onChange={(e) => setWaveInput(e.target.value)}
+        />
+        <button type="submit">Spawn wave</button>
+        <span>1–66 random spawns · 67–68 Jads</span>
+      </form>
       <section className="toolbar" aria-label="Scene tools">
         <button
           className="unit"
@@ -552,7 +592,9 @@ function App() {
                 ? "Wave start"
                 : scenario.kind === "current"
                   ? "Current positions"
-                  : "Explore freely"}
+                  : scenario.wave
+                    ? "Practice setup"
+                    : "Explore freely"}
             </span>
             <span>{scenario.player.join(", ")}</span>
           </div>

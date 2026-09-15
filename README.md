@@ -2,6 +2,8 @@
 
 An Inferno line-of-sight playground and prayer trainer. This repository contains the static React + TypeScript website, built with Vite. Simulation, LoS, training and share codes run entirely in the browser; there is no backend.
 
+The production address is [los.inferno.tips](https://los.inferno.tips/).
+
 The companion RuneLite sidebar lives in [inferno-los-plugin](https://github.com/ollieatkinson/inferno-los-plugin).
 
 ## Run the website
@@ -16,6 +18,7 @@ npm run dev
 Open **http://localhost:5173/**. No account or backend is needed. All scene and replay data stays in the link; preferences stay in your browser.
 
 - Click or drag the player to explore tiles. Drag monsters to rearrange them; double-click to remove.
+- Enter a **Wave** number and click **Spawn wave** to practise its monster lineup. Waves 1–66 use random assignments to the nine spawn slots; click again for a new layout, or **Reset** to retry the same one. Waves 67–68 load pillar-free Jad setups. Open `https://los.inferno.tips/?wave=63` for a random wave 63; **Share position** saves its exact layout. Wave 69 is not available because Zuk is not simulated. Nibblers appear in their central spawn area, but their movement and pillar damage are not simulated.
 - **Space** steps one game tick. The controls, prayer choices and vertical attack timeline sit beside the arena.
 - **1 / 2 / 3** select magic / ranged / melee protection; **0** turns prayer off. **P** plays or pauses, **R** resets, and the arrows move the player.
 - Toggle pillars, LoS shading and spawn tiles. Orientation and light/dark mode are remembered.
@@ -26,7 +29,7 @@ Open **http://localhost:5173/**. No account or backend is needed. All scene and 
 
 Clone [inferno-los-plugin](https://github.com/ollieatkinson/inferno-los-plugin) alongside this repository. Its README covers Java 17 setup, development-client launch and Plugin Hub submission. The website does not require Java or the plugin checkout to build or test.
 
-The plugin's **Current LoS** button opens a snapshot of player/NPC positions and pillars on this website. Wave-start links remain available after leaving the Inferno. Set the plugin's **Website URL** to `http://localhost:5173/` during development, then to the Cloudflare production address after deployment.
+The plugin's **Current LoS** button opens a snapshot of player/NPC positions and pillars on this website. Wave-start links remain available after leaving the Inferno. The plugin defaults to `https://los.inferno.tips/`. Set **Website URL** to `http://localhost:5173/` for local development.
 
 ## Tests
 
@@ -57,9 +60,9 @@ See [docs/LINKS.md](docs/LINKS.md) for the versioned plugin/website contract and
 
 See [Cloudflare hosting and RuneLite release](docs/RELEASE.md) for hosting settings, local plugin testing, and the Plugin Hub submission process.
 
-Deploy through **Cloudflare Pages → Import an existing Git repository**, selecting `ollieatkinson/inferno-los` and branch `trunk`. Use build command `npm run build`, output directory `dist`, and build variable `NODE_VERSION=22`. Leave the root directory at the repository root. Pages Git integration handles deployment without a deploy command or API token. Set the plugin's **Website URL** to the assigned `pages.dev` address after verifying it.
+Deploy through **Cloudflare Pages → Import an existing Git repository**, selecting `ollieatkinson/inferno-los` and branch `trunk`. Use build command `npm run build`, output directory `dist`, and build variable `NODE_VERSION=22`. Leave the root directory at the repository root. Pages Git integration handles deployment without a deploy command or API token. In the Pages project's **Custom domains**, associate `los.inferno.tips` with `inferno-los.pages.dev`. The plugin defaults to `https://los.inferno.tips/`.
 
-No site has been published and the plugin has not been submitted to the Plugin Hub. Automated verification includes a compiled plugin, Swing sidebar actions, mocked RuneLite scene capture, browser integration, and an isolated real RuneLite startup; it does not constitute an in-game playtest.
+The custom domain is being activated; DNS/HTTPS and hosted behavior still need verification. The plugin has not been submitted to the Plugin Hub. Automated verification includes a compiled plugin, Swing sidebar actions, mocked RuneLite scene capture, browser integration, and an isolated real RuneLite startup; it does not constitute an in-game playtest.
 
 ## Credits
 

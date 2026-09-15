@@ -150,6 +150,20 @@ nav {
   border: 1px solid var(--border);
   border-radius: 5px;
 }
+.wave-picker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.wave-picker input {
+  width: 70px;
+}
+.wave-picker span {
+  color: var(--muted);
+  font-size: 11px;
+}
 .unit {
   min-width: 62px;
   display: flex;

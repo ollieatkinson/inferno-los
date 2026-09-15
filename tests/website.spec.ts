@@ -469,3 +469,58 @@ test("trainer pauses when hidden and keeps the latest tick in view", async ({
   await page.clock.runFor(1200);
   await expect(page.getByTestId("tick-count")).toHaveText("Tick 20 / 60");
 });
+
+test("wave picker generates, retries and shares layouts, with pillar-free Jad waves", async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.addInitScript(() => {
+    let seed = 42;
+    Math.random = () =>
+      (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 2 ** 32;
+  });
+  await page.goto("/");
+  await page.getByRole("spinbutton", { name: "Wave", exact: true }).fill("63");
+  await page.getByRole("button", { name: "Spawn wave", exact: true }).click();
+  await expect(page.locator(".board-header")).toContainText("Wave 63");
+  await expect(page.locator(".board-header")).toContainText("Practice setup");
+  await expect(page.locator('[data-testid^="mob-"]')).toHaveCount(8);
+  await expect(page.getByTestId("tick-count")).toHaveText("Tick 0");
+  const share = async () => {
+    await page
+      .getByRole("button", { name: "Share position", exact: true })
+      .click();
+    return page.evaluate(() => navigator.clipboard.readText());
+  };
+  const first = await share();
+  await page.getByRole("button", { name: /Step \+1/ }).click();
+  await expect(page.getByTestId("tick-count")).toHaveText("Tick 1");
+  await page
+    .getByRole("button", { name: /Reset/, exact: false })
+    .first()
+    .click();
+  expect(await share()).toBe(first);
+  await page.getByRole("button", { name: "Spawn wave", exact: true }).click();
+  expect(await share()).not.toBe(first);
+  await page.goto(first);
+  expect(await share()).toBe(first);
+  await page.getByRole("spinbutton", { name: "Wave", exact: true }).fill("68");
+  await page.getByRole("button", { name: "Spawn wave", exact: true }).click();
+  await expect(page.locator('[data-testid^="mob-"]')).toHaveCount(3);
+  await expect(page.getByRole("button", { name: /^North [✓×]/ })).toHaveCount(
+    0,
+  );
+  await page.getByRole("spinbutton", { name: "Wave", exact: true }).fill("1");
+  await page.getByRole("button", { name: "Spawn wave", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "North ✓", exact: true }),
+  ).toBeVisible();
+  await page.goto("/?wave=63");
+  await expect(page.locator(".board-header")).toContainText("Wave 63");
+  await expect(
+    page.getByRole("spinbutton", { name: "Wave", exact: true }),
+  ).toHaveValue("63");
+  await page.goto("/?wave=69");
+  await expect(page.getByRole("status")).toContainText("Zuk");
+});

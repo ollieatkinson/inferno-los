@@ -9,6 +9,7 @@ import {
 import { blocked, legal } from "./geometry";
 import { decodeScout } from "./scout";
 import { decodeCode, encodeCode } from "./shareCode";
+import { waveScenario } from "./waves";
 const integer = (v: unknown, min: number, max: number): v is number =>
   Number.isInteger(v) && (v as number) >= min && (v as number) <= max;
 function tile(v: unknown): v is Tile {
@@ -104,6 +105,13 @@ export function decodeLink(input: string): Replay | null {
     (url.hash.startsWith("#[") ? decodeURIComponent(url.hash.slice(1)) : null);
   if (scout)
     return { scenario: validateScenario(decodeScout(scout)), steps: [] };
+  if (!url.hash && url.searchParams.has("wave"))
+    return {
+      scenario: validateScenario(
+        waveScenario(Number(url.searchParams.get("wave"))),
+      ),
+      steps: [],
+    };
   if (!url.hash && !url.search) return null;
   throw new Error("Unrecognised link. Use an Inferno LoS share link or code.");
 }
