@@ -587,9 +587,9 @@ test("meleers visibly dig, preserve a mid-dig share and delay prayer checks afte
     .click();
   await step.click();
   await expect(page.locator(".last-tick")).toContainText("Protected");
-  await expect(
-    page.locator(".tape").getByTitle("Meleer emerges"),
-  ).toHaveCount(1);
+  await expect(page.locator(".tape").getByTitle("Meleer emerges")).toHaveCount(
+    1,
+  );
 });
 
 test("Inferno Stats links import captured tiles instead of generating a random wave", async ({
@@ -604,6 +604,49 @@ test("Inferno Stats links import captured tiles instead of generating a random w
     page.getByTestId("mob-1").locator("rect").first(),
   ).toHaveAttribute("x", "22");
   await expect(
-    page.getByText(/Inferno Stats supplies monster spawns only/),
+    page.getByText(/Inferno Stats:.*practice defaults/),
   ).toBeVisible();
 });
+
+for (const kind of ["spawn", "current"] as const) {
+  test(`Inferno Stats ${kind} query preserves captured geometry and shares an IL2 code`, async ({
+    page,
+    context,
+  }) => {
+    const { readFileSync } = await import("node:fs");
+    const fixture = readFileSync(
+      new URL(`./fixtures/inferno-stats-${kind}-url.txt`, import.meta.url),
+      "utf8",
+    ).trim();
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.goto(new URL(fixture).search);
+    await expect(page.locator(".board-header")).toContainText(
+      kind === "spawn" ? "Wave start" : "Current positions",
+    );
+    await expect(
+      page.getByTestId("mob-42").locator("rect").first(),
+    ).toHaveAttribute("x", kind === "spawn" ? "22" : "422");
+    await expect(page.getByTestId("player").locator("circle")).toHaveAttribute(
+      "cx",
+      "330",
+    );
+    await expect(page.getByTestId("player").locator("circle")).toHaveAttribute(
+      "cy",
+      "110",
+    );
+    await expect(page.locator(".pillar.standing")).toHaveCount(
+      kind === "spawn" ? 2 : 0,
+    );
+    await expect(page.getByText(/practice defaults/)).toHaveCount(0);
+    await page
+      .getByRole("button", { name: "Share position", exact: true })
+      .click();
+    const shared = await page.evaluate(() => navigator.clipboard.readText());
+    expect(new URL(shared).hash).toMatch(/^#IL2-/);
+    await page.goto(shared);
+    await expect(page.getByTestId("mob-42")).toBeVisible();
+    await expect(page.locator(".pillar.standing")).toHaveCount(
+      kind === "spawn" ? 2 : 0,
+    );
+  });
+}

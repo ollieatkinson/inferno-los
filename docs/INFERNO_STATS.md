@@ -1,28 +1,24 @@
 # Inferno Stats integration
 
-[Inferno Stats PR #20](https://github.com/InfernoStats/InfernoStats/pull/20) adds **Inferno Tips** to the existing **Wave Tool** configuration and provides current-position and wave-start links. The contribution is on [our fork's add-inferno-tips branch](https://github.com/ollieatkinson/InfernoStats/tree/add-inferno-tips), at commit `d6cd017`. The local patch is `build/inferno-stats-link.patch` (generated, not committed).
+[PR #20](https://github.com/InfernoStats/InfernoStats/pull/20) adds **Inferno Tips** to the existing **Wave Tool** setting. The Line of Sight default and Trainer option remain unchanged. The contribution is on [add-inferno-tips](https://github.com/ollieatkinson/InfernoStats/tree/add-inferno-tips).
 
-## Behaviour
+## Minimal integration
 
-Select **Wave Tool → Inferno Tips**. The existing wave-row link and explicit **Spawn LoS** button then open this website using compact `#IL2-…` codes. **Current LoS** appears above the scrolling wave list and captures current positions when clicked. Changing the configuration updates already-rendered wave links. The existing Line of Sight default and Trainer destination keep their original URL format; this does not silently replace their default site.
+- **Wave spawns:** click the existing wave row. This uses the existing `WaveHandler` and `WaveNpc` records, augmented with player/pillars at wave start and NPC indices. There is no additional per-wave button or sidebar redesign.
+- **Current LoS:** one button, shown when Inferno Tips is selected and enabled in the arena, reads current regular NPC positions, player tile and standing pillars on click.
+- Both use the existing JSON coordinate-pair query format. Optional player, pillar, capture-kind and NPC-index parameters carry the extra data; no IL2 encoder is included in the plugin.
+- The website accepts these queries and generates compact IL2 codes when sharing. Other destinations keep their previous links.
 
-- **Current LoS:** player tile, living supported NPC positions and indices, standing pillars, and wave number if observed. Available inside the Inferno, including when enabled mid-wave.
-- **Spawn LoS:** player/pillars at wave start and NPC coordinates from the initial spawn events. Frozen captures survive movement and leaving the arena. Missing captures are disabled; no random wave or guessed positions are exported.
-- Captures include nibblers, bloblets, Jad and Jad healers. Fight Caves is unsupported. Zuk, his shield and Zuk healers are unsupported, and links for supported Zuk-wave adds carry a warning.
-- Attack cooldowns and dig timers are not captured. Links describe geometry, not a fully synchronized combat replay.
+The contribution has two small helpers: scene-coordinate/pillar reads and shared URL construction. Wave recording remains in the upstream handler; there is no separate recorder, snapshot model or duplicate NPC type catalogue. Instance normalization handles rotated NPC footprints, and the existing wave NPC list permits safe sidebar reads while new spawns arrive. Pillars are scanned only on wave starts and explicit current-position requests.
 
-Scene access stays on the client thread. Pillars are scanned only on wave starts and explicit current-position requests. Captures are immutable before publication to Swing. Wave-start capture handles chat/NPC event ordering and excludes later resurrections. The reused capture/IL2 code retains its MIT notice; there is no additional runtime dependency.
+## Scope
 
-## Verified
+This deliberately follows Inferno Stats' five regular monster types. Nibblers, bloblets, Jad and Zuk are not captured; the website identifies that limitation. Fight Caves and saved waves 67–69 are unavailable for Inferno Tips. Current captures omit the wave number because the plugin may have been enabled mid-wave. Attack cooldowns and dig timers are not captured.
 
-- All 13 Java tests and JAR build pass on Linux and native Windows using Java 17 / Gradle 8.10. The upstream Gradle 6.6.1 wrapper remains unchanged.
-- Tests cover capture event ordering, movement, leaving and re-entry, missing starts, NPC indices, rotated instance footprints, pillar objects, codec fixture parity, and config switching on existing wave rows.
-- Sidebar test checks a fixed Current LoS action above 66 scrolling waves, availability, and action wiring. The new LoS buttons use a standard sans-serif font.
-- Both Java-generated IL2 fixtures opened on the hosted website with exact NPC/player coordinates, standing pillar state, and distinct Wave start / Current positions labels. Screenshots are in local `test-results/inferno-stats-{spawn,current}-compact.png`.
-- Older Inferno Stats query-array links remain an import convenience. The contribution no longer generates them for Inferno Tips.
+Older links without extra fields still work, with missing player/pillar/order data labelled as practice defaults. Empty marked captures stay empty. The standalone plugin continues to provide its richer capture and direct IL2 exports independently.
 
-A live Inferno playtest is still outstanding. Maintainer acceptance and Plugin Hub availability are not yet confirmed. The standalone plugin is the primary LoS development path. Keep this full contribution open while the user asks the maintainer whether it fits Inferno Stats; do not reduce or close it without further direction.
+## Validation and Windows use
 
-## Windows test client
+Six Java tests cover current movement, dead NPC exclusion, instance rotation, pillar footprints, reuse of the wave handler, frozen spawn coordinates, unchanged original URLs, existing-row config switching and Current LoS UI wiring. The website has 47 unit tests and 17 browser tests, including both Java-generated query fixtures, captured geometry, metadata validation, and conversion to compact share codes.
 
-The updated checkout is `C:\Users\olive\source\InfernoStats`. Restart using the **Inferno Stats (development)** Start-menu shortcut, which uses native Windows Java 17 and the existing Jagex login profile. Select **Wave Tool → Inferno Tips** and enter the Inferno. Current LoS works immediately; Spawn LoS becomes available after an observed wave start. Already-running clients must restart to load the new code. Normal Plugin Hub installations receive these changes only after upstream acceptance and release.
+Use the native Windows **Inferno Stats (development)** shortcut after rebuilding/restarting, select **Wave Tool → Inferno Tips**, then use Current LoS or click a wave row. A logged-in Inferno playtest and maintainer acceptance remain outstanding. The generated local patch is `build/inferno-stats-link.patch`.

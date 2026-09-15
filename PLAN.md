@@ -29,7 +29,7 @@ This tracks the full request, including follow-up messages. A checked item means
 - [x] Preserve relevant Colosseum improvements: draggable NPCs, improved corner pathing, tick timeline, replay sharing, and convenient wave/current links. Colosseum-specific mobs/modifiers do not belong here.
 - [x] Keep the website available locally for review.
 - [x] Add meleer digging, visible burrow/emergence cues, editable next-check timing, delayed attacks and deterministic share/replay state. Verify underground collision/LoS, legal destinations, recent-attack restriction, rewind/resume and browser prayer checks. All 44 unit tests and 15 browser tests pass, including drag performance.
-- [x] Integrate with Inferno Stats through its Wave Tool config: explicit Current LoS and Spawn LoS actions, compact IL2 exports, captured player/pillars/NPC indices, immutable wave starts and scrolling sidebar. All 13 Java tests pass on Windows/Linux and both generated links were verified on the hosted site. See `docs/INFERNO_STATS.md`.
+- [x] Integrate with Inferno Stats through its Wave Tool config: one Current LoS button and existing wave-row spawn links, reusing its records and query format with player/pillars/NPC indices. Compact codes are generated on the website. Six Java tests, 47 website unit tests and 17 browser tests cover the simplified integration. See `docs/INFERNO_STATS.md`.
 - [x] Submit the Inferno Stats contribution for maintainer review: [PR #20](https://github.com/InfernoStats/InfernoStats/pull/20). Prefer this integration route for saved-wave links; retain the standalone plugin for current-position capture while integration develops.
 - [x] Keep Controls, timing & credits permanently expanded below the arena.
 - [x] Enter a wave number to generate a practice setup: correct lineups for waves 1–66, random unique standard spawn slots, central nibblers, and existing pillar-free Jad drills for 67–68. Repeat **Spawn wave** for a new layout, **Reset** to retry, and share exact positions with IL2 links. Support `?wave=63`; reject unsupported Zuk wave 69. Verified all 66 lineups against reference data, legal placements across 1,320 generated layouts, and browser generation/reset/reshuffle/sharing/Jad transitions. All 33 unit tests and 13 browser tests pass, including drag performance.
@@ -125,11 +125,21 @@ The checklist covers the requested LoS/prayer-practice product. It does not asse
 ## Inferno Stats follow-up (15 September 2026)
 
 - [x] Replace the saved-wave destination through the existing config option; retain the upstream default and other tools.
-- [x] Generate compact IL2 codes for Inferno Tips; keep query arrays only for the other sites and legacy website imports.
+- [x] Generate compact IL2 codes on the website. Inferno Stats uses its existing query arrays plus optional capture metadata; the standalone plugin still generates IL2 directly.
 - [x] Add Current LoS capture and explicit Spawn LoS actions using recorded positions, never a random wave number.
 - [x] Update PR #20, native Windows development checkout/build, integration documentation and generated patch.
 - [ ] Complete an in-game Inferno playtest and address upstream review before retiring the standalone plugin.
 
 ## Direction update — standalone LoS and maintainer feedback
 
-The standalone plugin is the primary development path, focused on Current LoS and Wave N · Spawn LoS. Keep the full Inferno Stats PR #20 contribution intact while the user asks whether the maintainer wants it. Do not reduce or close that PR without further direction. The standalone Windows development build has been updated and its 13 tests pass on Windows and Linux.
+The standalone plugin is the primary development path, focused on Current LoS and Wave N · Spawn LoS. The user subsequently approved simplifying Inferno Stats PR #20 to reuse its existing records and link format, while retaining Current LoS and wave spawns. Keep the revised PR open for maintainer feedback. The standalone Windows development build has been updated and its 13 tests pass on Windows and Linux.
+
+## Inferno Stats simplification (approved 15 September 2026)
+
+- [x] Keep the existing Wave Tool configuration and wave-row links; add only Current LoS to the existing sidebar layout.
+- [x] Reuse upstream wave records and NPC types; remove the separate recorder, snapshot classes, NPC catalogue and binary encoder.
+- [x] Extend the query importer for captured player tiles, pillars, NPC indices and current/wave type; create compact codes when sharing on the website.
+- [x] Test original destination compatibility and both generated links end to end.
+- [ ] Complete live in-game validation and maintainer review of the revised PR.
+
+This approval supersedes the earlier instruction to retain the larger contribution unchanged. The standalone plugin remains independent and retains its Fortis-style sidebar.

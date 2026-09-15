@@ -37,3 +37,63 @@ it("keeps empty captures empty and rejects malformed, unsupported or out-of-boun
   ])
     expect(() => decodeLink("https://los.inferno.tips/?" + query)).toThrow();
 });
+
+it("imports current player/pillars and actual NPC indices, then shares a compact code", () => {
+  const input =
+    "https://los.inferno.tips/?source=inferno-stats&kind=current&location=INFERNO&player=[16,5]&pillars=[true,false,true]&mager=[[20,8]]&magerIds=[42]&ranger=[[22,12]]&rangerIds=[6]&copyable";
+  const s = decodeLink(input)!.scenario;
+  expect(s.kind).toBe("current");
+  expect(s.wave).toBeUndefined();
+  expect(s.player).toEqual([16, 5]);
+  expect(s.pillars).toEqual([true, false, true]);
+  expect(s.mobs.map((m) => m.id)).toEqual([6, 42]);
+  expect(s.warnings?.join(" ")).not.toContain("practice defaults");
+  expect(s.warnings?.join(" ")).toContain("Nibblers");
+  const shared = encodeLink(s, "https://los.inferno.tips/");
+  expect(shared).toContain("#IL2-");
+  expect(decodeLink(shared)?.scenario).toEqual(s);
+});
+
+it("preserves explicit empty current captures and wave-start context", () => {
+  const base =
+    "https://los.inferno.tips/?source=inferno-stats&location=INFERNO&player=[16,5]&pillars=[false,false,false]";
+  expect(decodeLink(base + "&kind=current")?.scenario).toMatchObject({
+    kind: "current",
+    player: [16, 5],
+    pillars: [false, false, false],
+    mobs: [],
+  });
+  expect(
+    decodeLink(base + "&kind=wave&wave=63&mager=[[1,5]]&magerIds=[42]")
+      ?.scenario,
+  ).toMatchObject({
+    kind: "wave",
+    wave: 63,
+    player: [16, 5],
+    pillars: [false, false, false],
+    mobs: [{ id: 42, type: "mager", x: 1, y: 5 }],
+  });
+});
+
+it("rejects malformed capture metadata and mismatched, duplicate or invalid indices", () => {
+  for (const query of [
+    "kind=wrong",
+    "player=[]",
+    "player=[99,5]",
+    "player=[16,5,6]",
+    "player=null",
+    "pillars=[true]",
+    "pillars=[1,0,1]",
+    "pillars=null",
+    "magerIds=[42]",
+    "mager=[[1,5]]&magerIds=[]",
+    "mager=[[1,5]]&magerIds=[-1]",
+    "mager=[[1,5]]&magerIds=[65536]",
+    "mager=[[1,5]]&magerIds=[1.5]",
+    "mager=[[1,5]]&magerIds=[42]&ranger=[[22,5]]",
+    "mager=[[1,5]]&magerIds=[42]&ranger=[[22,5]]&rangerIds=[42]",
+  ])
+    expect(() =>
+      decodeLink("https://los.inferno.tips/?source=inferno-stats&" + query),
+    ).toThrow();
+});

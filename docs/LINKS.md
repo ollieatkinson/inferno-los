@@ -94,8 +94,20 @@ The nine anchors are `(1,5), (22,5), (3,11), (23,12), (16,17), (5,23), (23,25), 
 
 ## Inferno Stats import
 
-The Inferno Tips contribution exports **Current LoS** and **Spawn LoS** using the IL2 format above, including captured player tiles, standing pillars and NPC indices. The query format below is accepted for importing links from older/existing Inferno Stats versions; it is not the contribution's export format for this site.
+The Inferno Stats contribution uses its existing query format for both current positions and saved waves. The standalone Inferno LoS plugin continues to export IL2 directly. Opening an Inferno Stats query and sharing it from this website produces IL2.
 
-The existing Inferno Stats format supplies `bat`, `blob`, `melee`, `ranger`, and `mager` query parameters containing JSON arrays of southwest tile pairs, for example `mager=[[1,5]]&copyable`. These use the same 29×30 grid as this site. Optional `source=inferno-stats`, `wave=63`, and `location=INFERNO` parameters identify the capture; marked empty captures stay empty rather than generating a random wave. Fight Caves links, captured Jad/Zuk waves and invalid coordinates are rejected. An IL2 fragment has precedence.
+Regular NPC parameters `bat`, `blob`, `melee`, `ranger`, and `mager` contain JSON arrays of southwest tile pairs, e.g. `mager=[[1,5]]&copyable`. Coordinates use the same 29×30 grid as this site. Values should be URL-escaped when generating links.
 
-The imported player tile, standing pillars and NPC order are practice defaults and are identified as such. Nibblers are not supplied. Sharing an imported scene generates a normal IL2 link.
+Optional metadata:
+
+| Parameter                                      | Meaning                                                                                                                                  |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `source=inferno-stats`                         | Identifies the format, including an empty capture.                                                                                       |
+| `location=INFERNO`                             | Rejects accidental Fight Caves imports when another location is supplied.                                                                |
+| `kind=wave` or `kind=current`                  | Capture type; absent means a saved wave.                                                                                                 |
+| `wave=63`                                      | Recorded wave number. Omitted from current captures.                                                                                     |
+| `player=[16,5]`                                | Player tile at the capture time.                                                                                                         |
+| `pillars=[true,false,true]`                    | Standing west, north and south pillars.                                                                                                  |
+| `magerIds=[42]` (and equivalent for each type) | NPC indices matching that type's coordinate pairs. If any indices are supplied, all supplied NPC groups must have matching index arrays. |
+
+Missing player, pillars or NPC ordering are identified as practice defaults. The integration supplies only the five regular enemy types; the website explicitly notes omitted nibblers, bloblets, Jad and Zuk. Saved waves 67–69, Fight Caves, invalid metadata, mismatched or duplicate NPC indices, and invalid geometry are rejected. An IL2 fragment takes precedence over query parameters. Empty marked captures remain empty instead of generating a random wave.
