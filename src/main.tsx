@@ -1012,8 +1012,8 @@ function App() {
           </section>
         </aside>
       </div>
-      <details className="help">
-        <summary>Controls, timing & credits</summary>
+      <section className="help" aria-labelledby="help-title">
+        <h2 id="help-title">Controls, timing & credits</h2>
         <p>
           <kbd>Space</kbd> step · <kbd>P</kbd> play/pause · <kbd>R</kbd> reset ·
           arrows move · <kbd>1</kbd> magic · <kbd>2</kbd> ranged · <kbd>3</kbd>{" "}
@@ -1052,7 +1052,7 @@ function App() {
           <a href="https://github.com/ollieatkinson/inferno-los">Source code</a>
           .
         </p>
-      </details>
+      </section>
     </main>
   );
 }
