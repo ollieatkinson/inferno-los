@@ -1,6 +1,6 @@
 # Inferno Stats integration
 
-[Inferno Stats PR #20](https://github.com/InfernoStats/InfernoStats/pull/20) adds **Inferno Tips** to the existing **Wave Tool** configuration and provides current-position and wave-start links. The contribution is on [our fork's add-inferno-tips branch](https://github.com/ollieatkinson/InfernoStats/tree/add-inferno-tips), at commit `d6cd017`. The local patch is `build/inferno-stats-link.patch` (generated, not committed).
+[Inferno Stats PR #20](https://github.com/InfernoStats/InfernoStats/pull/20) adds **Inferno Tips** to the existing **Wave Tool** configuration and provides current-position and wave-start links. The contribution is on [our fork's add-inferno-tips branch](https://github.com/ollieatkinson/InfernoStats/tree/add-inferno-tips), with the implementation from `d6cd017` restored at `0dfbd13`. The local patch is `build/inferno-stats-link.patch` (generated, not committed).
 
 ## Behaviour
 
@@ -21,7 +21,7 @@ Scene access stays on the client thread. Pillars are scanned only on wave starts
 - Both Java-generated IL2 fixtures opened on the hosted website with exact NPC/player coordinates, standing pillar state, and distinct Wave start / Current positions labels. Screenshots are in local `test-results/inferno-stats-{spawn,current}-compact.png`.
 - Older Inferno Stats query-array links remain an import convenience. The contribution no longer generates them for Inferno Tips.
 
-A live Inferno playtest is still outstanding. Maintainer acceptance and Plugin Hub availability are not yet confirmed. Keep the standalone plugin available until this integration is tested and accepted; its separate Hub submission remains on hold.
+A live Inferno playtest is still outstanding. Maintainer acceptance and Plugin Hub availability are not yet confirmed. The standalone plugin is the primary LoS development path. Keep this full contribution open while the user asks the maintainer whether it fits Inferno Stats; do not reduce or close it without further direction.
 
 ## Windows test client
 

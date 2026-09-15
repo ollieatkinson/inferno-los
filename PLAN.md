@@ -50,7 +50,7 @@ This tracks the full request, including follow-up messages. A checked item means
 - [x] Set the plugin's default website URL to `https://los.inferno.tips/` ahead of activation at the user's request; update setup docs and the Windows checkout. DNS/HTTPS and hosted links have since been verified.
 - [ ] Complete a logged-in Inferno playtest of current positions and wave captures.
 - [x] Publish the standalone plugin source repository.
-- [ ] Reassess standalone Plugin Hub submission after the Inferno Stats integration review; do not submit a duplicate saved-wave plugin in the meantime.
+- [ ] Focus development on the standalone LoS plugin and complete its live Inferno playtest before Plugin Hub submission. Keep the full Inferno Stats contribution open for maintainer feedback.
 - [x] Use Cloudflare Pages as requested: Git integration, branch `trunk`, build `npm run build`, output `dist`, and `NODE_VERSION=22`. Remove the mistakenly added Workers config and instructions.
 
 ## Working preferences
@@ -129,3 +129,7 @@ The checklist covers the requested LoS/prayer-practice product. It does not asse
 - [x] Add Current LoS capture and explicit Spawn LoS actions using recorded positions, never a random wave number.
 - [x] Update PR #20, native Windows development checkout/build, integration documentation and generated patch.
 - [ ] Complete an in-game Inferno playtest and address upstream review before retiring the standalone plugin.
+
+## Direction update — standalone LoS and maintainer feedback
+
+The standalone plugin is the primary development path, focused on Current LoS and Wave N · Spawn LoS. Keep the full Inferno Stats PR #20 contribution intact while the user asks whether the maintainer wants it. Do not reduce or close that PR without further direction. The standalone Windows development build has been updated and its 13 tests pass on Windows and Linux.
