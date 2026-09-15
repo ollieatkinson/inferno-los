@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef } from "react";
 import { blocked, contains } from "./geometry";
 import { ThreatMapCache } from "./threatMap";
+import { JadSprite } from "./JadSprite";
 import {
   NPCS,
   PILLARS,
@@ -26,19 +27,14 @@ const Tiles = memo(
     mobs,
     pillars,
     enabled,
-    selected,
   }: {
     mobs: Mob[];
     pillars: Scenario["pillars"];
     enabled: boolean;
-    selected: number | null;
   }) {
     const cache = useRef(new ThreatMapCache());
     const maps = enabled
-      ? cache.current.combine(
-          mobs.filter((m) => selected === null || selected === m.id),
-          pillars,
-        )
+      ? cache.current.combine(mobs, pillars)
       : new Uint8Array(WIDTH * HEIGHT);
     return (
       <>
@@ -74,7 +70,6 @@ const Tiles = memo(
   },
   (a, b) =>
     a.enabled === b.enabled &&
-    a.selected === b.selected &&
     a.pillars.every((p, i) => p === b.pillars[i]) &&
     a.mobs.length === b.mobs.length &&
     a.mobs.every(
@@ -94,6 +89,9 @@ interface Props {
   south: boolean;
   showLos: boolean;
   showSpawns: boolean;
+  showPillars: boolean;
+  playing: boolean;
+  tickMs: number;
   selected: number | null;
   onMove: (p: Tile) => void;
   onPlace: (p: Tile) => void;
@@ -110,6 +108,9 @@ export function Arena({
   south,
   showLos,
   showSpawns,
+  showPillars,
+  playing,
+  tickMs,
   selected,
   onMove,
   onPlace,
@@ -233,12 +234,7 @@ export function Arena({
           </marker>
         </defs>
         <g transform={south ? "translate(580 600) rotate(180)" : undefined}>
-          <Tiles
-            mobs={s.mobs}
-            pillars={s.pillars}
-            enabled={showLos}
-            selected={selected}
-          />
+          <Tiles mobs={s.mobs} pillars={s.pillars} enabled={showLos} />
           {showSpawns &&
             SPAWNS.map(([x, y], i) => (
               <g key={i}>
@@ -263,28 +259,29 @@ export function Arena({
                 </text>
               </g>
             ))}
-          {PILLARS.map((p, i) => (
-            <g key={p.name}>
-              <rect
-                x={p.x * 20 + 1}
-                y={(p.y - 2) * 20 + 1}
-                width="58"
-                height="58"
-                className={"pillar " + (s.pillars[i] ? "standing" : "fallen")}
-              />
-              <text
-                x={(p.x + 1.5) * 20}
-                y={(p.y - 0.5) * 20 + 4}
-                className="pillar-label"
-                fontSize="11"
-                textAnchor="middle"
-                transform={upright((p.x + 1.5) * 20, (p.y - 0.5) * 20)}
-              >
-                {p.name[0]}
-                {s.pillarHp?.[i] !== undefined ? " " + s.pillarHp[i] : ""}
-              </text>
-            </g>
-          ))}
+          {showPillars &&
+            PILLARS.map((p, i) => (
+              <g key={p.name}>
+                <rect
+                  x={p.x * 20 + 1}
+                  y={(p.y - 2) * 20 + 1}
+                  width="58"
+                  height="58"
+                  className={"pillar " + (s.pillars[i] ? "standing" : "fallen")}
+                />
+                <text
+                  x={(p.x + 1.5) * 20}
+                  y={(p.y - 0.5) * 20 + 4}
+                  className="pillar-label"
+                  fontSize="11"
+                  textAnchor="middle"
+                  transform={upright((p.x + 1.5) * 20, (p.y - 0.5) * 20)}
+                >
+                  {p.name[0]}
+                  {s.pillarHp?.[i] !== undefined ? " " + s.pillarHp[i] : ""}
+                </text>
+              </g>
+            ))}
           {s.mobs.map((m) => {
             const n = NPCS[m.type],
               old = before?.mobs.find((o) => o.id === m.id);
@@ -333,15 +330,31 @@ export function Arena({
                   stroke={n.color}
                   strokeWidth={selected === m.id ? 3 : 1}
                 />
-                <image
-                  href={icon(m.type)}
-                  x={cx - imageSize / 2}
-                  y={cy - imageSize / 2}
-                  width={imageSize}
-                  height={imageSize}
-                  transform={upright(cx, cy)}
-                  pointerEvents="none"
-                />
+                {m.type === "jad" ? (
+                  <JadSprite
+                    tick={tick}
+                    playing={playing}
+                    tickMs={tickMs}
+                    pendingStyle={m.pendingStyle}
+                    pendingTicks={m.pendingTicks}
+                    x={cx - imageSize / 2}
+                    y={cy - imageSize / 2}
+                    width={imageSize}
+                    height={imageSize}
+                    transform={upright(cx, cy)}
+                    pointerEvents="none"
+                  />
+                ) : (
+                  <image
+                    href={icon(m.type)}
+                    x={cx - imageSize / 2}
+                    y={cy - imageSize / 2}
+                    width={imageSize}
+                    height={imageSize}
+                    transform={upright(cx, cy)}
+                    pointerEvents="none"
+                  />
+                )}
                 <rect
                   x={m.x * 20 + 3}
                   y={m.y * 20 + 13}

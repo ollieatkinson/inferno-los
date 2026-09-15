@@ -69,9 +69,11 @@ export class Simulation {
       )
         continue;
       const possible = styles(m, player);
+      const attackSpeed =
+        m.type === "jad" && s.wave === 68 ? 9 : NPCS[m.type].speed;
       if (possible.includes("melee")) {
         hit(m, "melee");
-        m.cooldown = NPCS[m.type].speed;
+        m.cooldown = attackSpeed;
         continue;
       }
       if (m.type === "blob") {
@@ -89,7 +91,7 @@ export class Simulation {
         const style = randomStyle(m);
         m.pendingStyle = style;
         m.pendingTicks = 3;
-        m.cooldown = 8;
+        m.cooldown = attackSpeed;
         cues.push({ id: m.id, style, kind: "windup" });
       } else {
         hit(m, NPCS[m.type].style as Prayer);

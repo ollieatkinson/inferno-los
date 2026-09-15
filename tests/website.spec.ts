@@ -37,6 +37,7 @@ test("plugin snapshots load, stepping shows the prayer and replay opens in the s
   await page.locator(".link-input summary").click();
   await page.getByRole("button", { name: "Copy replay link" }).click();
   const url = await page.evaluate(() => navigator.clipboard.readText());
+  expect(new URL(url).hash).toMatch(/^#IL2-[A-Za-z0-9_-]+$/);
   await page.goto(url);
   await expect(page.locator(".timeline")).toContainText("Replay 0 / 1");
   await page.getByRole("button", { name: /Step \+1/ }).click();
@@ -100,6 +101,37 @@ test("player and monsters drag, double-click deletes, preferences survive reload
     ),
   ).toBe(true);
 });
+test("copies compact links and bare codes, reloads them, and reports damaged codes", async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/#v1=" + encodeURIComponent(JSON.stringify(snapshot)));
+  await page
+    .getByRole("button", { name: "Share position", exact: true })
+    .click();
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  expect(new URL(link).hash).toMatch(/^#IL2-[A-Za-z0-9_-]+$/);
+  await page.locator(".link-input summary").click();
+  await page
+    .getByRole("button", { name: "Copy share code", exact: true })
+    .click();
+  const code = await page.evaluate(() => navigator.clipboard.readText());
+  expect(code).toBe(new URL(link).hash.slice(1));
+  expect(code.length).toBeLessThan(40);
+  await page.getByRole("button", { name: "Clear", exact: true }).click();
+  await page.getByRole("textbox").fill(code);
+  await page.getByRole("button", { name: "Load", exact: true }).click();
+  await expect(page.getByTestId("mob-1")).toBeVisible();
+  await expect(page.locator(".board-header")).toContainText("Wave 63");
+  await page.getByRole("textbox").fill(code.slice(0, -3));
+  await page.getByRole("button", { name: "Load", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("damaged");
+  await expect(page.getByTestId("mob-1")).toBeVisible();
+  await page.goto(link);
+  await expect(page.getByTestId("mob-1")).toBeVisible();
+});
+
 test("loads ranked Scouter code with pillar HP and reports malformed input", async ({
   page,
 }) => {
@@ -176,6 +208,7 @@ test("right-hand prayer and ticks stay beside the arena on desktop", async ({
 test("opens a link emitted by the compiled Java plugin", async ({ page }) => {
   const { readFile } = await import("node:fs/promises");
   const url = await readFile("plugin/build/fixtures/wave-url.txt", "utf8");
+  expect(new URL(url).hash).toBe("#IL2-FKEBBT8CBgPyAikE_AEAANDSVrY");
   await page.goto(url);
   await expect(page.locator(".board-header")).toContainText("Wave 63");
   await expect(page.getByTestId("mob-41")).toBeVisible();
@@ -190,6 +223,42 @@ test("opens a link emitted by the compiled Java plugin", async ({ page }) => {
   );
   await page.keyboard.press("Space");
   await expect(page.getByTestId("tick-count")).toHaveText("Tick 1");
+});
+
+test("all monsters keep their LoS when one is selected and dragged", async ({
+  page,
+}) => {
+  const scene = {
+    ...snapshot,
+    pillars: [false, false, false],
+    mobs: [
+      { id: 1, type: "mager", x: 1, y: 5 },
+      { id: 2, type: "ranger", x: 22, y: 25 },
+    ],
+  };
+  await page.goto("/#v1=" + encodeURIComponent(JSON.stringify(scene)));
+  const rangedTile = page.locator('.arena rect.tile[x="460"][y="540"]');
+  const overlapTile = page.locator('.arena rect.tile[x="460"][y="400"]');
+  const magicTile = page.locator('.arena rect.tile[x="40"][y="0"]');
+  await expect(rangedTile).toHaveClass(/\brange\b/);
+  await expect(magicTile).toHaveClass(/\bmage\b/);
+  await expect(overlapTile).toHaveClass(/\brange\b/);
+  const box = (await page.locator(".arena").boundingBox())!;
+  const start = pos(box, 1, 5),
+    end = pos(box, 6, 5);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await expect(rangedTile).toHaveClass(/\brange\b/);
+  await page.mouse.move(end.x, end.y, { steps: 5 });
+  await expect(
+    page.getByTestId("mob-1").locator("rect").first(),
+  ).toHaveAttribute("x", "122");
+  await expect(rangedTile).toHaveClass(/\brange\b/);
+  await expect(magicTile).toHaveClass(/\bmage\b/);
+  await expect(overlapTile).toHaveClass(/\bmixed\b/);
+  await page.mouse.up();
+  await expect(rangedTile).toHaveClass(/\brange\b/);
+  await expect(magicTile).toHaveClass(/\bmage\b/);
 });
 
 test("nine-monster drag stays responsive with LoS enabled", async ({
@@ -262,6 +331,83 @@ test("nine-monster drag stays responsive with LoS enabled", async ({
     contentType: "application/json",
   });
   expect(metrics.p95Ms).toBeLessThan(100); // two animation frames + work; catches severe drag regressions
+});
+
+test("Jad drills have no pillars and animate real attack poses with pause and stepping", async ({
+  page,
+}) => {
+  await page.clock.install();
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Prayer trainer", exact: true })
+    .click();
+  await page.getByLabel("Practice drill").selectOption("jad");
+  // SVG href assertions alone also pass when Vite returns HTML for a missing image.
+  const loaded = await page.evaluate(async () => {
+    const frames = ["mage", "range"].flatMap((style) =>
+      Array.from(
+        { length: style === "mage" ? 32 : 13 },
+        (_, i) => `./icons/jad/jad_${style}_${i + 1}.png`,
+      ),
+    );
+    return Promise.all(
+      frames.map(async (src) => {
+        const image = new Image();
+        image.src = src;
+        try {
+          await image.decode();
+          return image.naturalWidth > 0;
+        } catch {
+          return false;
+        }
+      }),
+    );
+  });
+  expect(loaded).toEqual(Array(45).fill(true));
+  await expect(page.locator(".arena .pillar")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /North [✓×]/ })).toHaveCount(0);
+  await expect(page.locator('.arena [data-testid^="mob-"]')).toHaveCount(1);
+  await page.getByLabel("Prayer hints").uncheck();
+  const sprite = page.getByTestId("mob-1").getByTestId("jad-sprite");
+  for (let i = 0; i < 4; i++)
+    await page.getByRole("button", { name: /Step \+1/ }).click();
+  await expect(sprite).toHaveAttribute("href", /jad_(mage|range)_1\.png/);
+  await page.getByRole("button", { name: /▶ Play/ }).click();
+  await page.clock.runFor(350);
+  await expect(sprite).toHaveAttribute("href", /jad_(mage|range)_4\.png/);
+  await page.getByRole("button", { name: /Ⅱ Pause/ }).click();
+  const paused = await sprite.getAttribute("href");
+  await page.clock.runFor(1200);
+  await expect(sprite).toHaveAttribute("href", paused!);
+  await page.getByRole("button", { name: /▶ Play/ }).click();
+  await page.clock.runFor(100);
+  await expect(sprite).toHaveAttribute("href", /jad_(mage|range)_5\.png/);
+  await page.getByRole("button", { name: /Ⅱ Pause/ }).click();
+  await page.getByRole("button", { name: /Step \+1/ }).click();
+  await expect(sprite).toHaveAttribute("href", /jad_(mage|range)_7\.png/);
+  await page.getByRole("button", { name: "Reset simulation" }).click();
+  await expect(sprite).toHaveAttribute("href", /jad_mage_1\.png/);
+  await page.getByLabel("Practice drill").selectOption("triple-jad");
+  await expect(page.locator('.arena [data-testid^="mob-"]')).toHaveCount(3);
+  await expect(page.locator(".arena .pillar")).toHaveCount(0);
+  const styles = new Set<string>();
+  for (let i = 0; i < 15; i++) {
+    await page.getByRole("button", { name: /Step \+1/ }).click();
+    for (const url of await page
+      .getByTestId("jad-sprite")
+      .evaluateAll((nodes) => nodes.map((n) => n.getAttribute("href")!))) {
+      if (!url.endsWith("_1.png"))
+        styles.add(url.includes("jad_mage_") ? "mage" : "range");
+    }
+  }
+  expect([...styles].sort()).toEqual(["mage", "range"]);
+  await page.screenshot({
+    path: "test-results/triple-jad.png",
+    fullPage: true,
+  });
+  await page.getByLabel("Practice drill").selectOption("alternating");
+  await expect(page.locator(".arena .pillar.standing")).toHaveCount(3);
+  await expect(page.getByTestId("jad-sprite")).toHaveCount(0);
 });
 
 test("current-stack training preserves the scene imported in Explore", async ({

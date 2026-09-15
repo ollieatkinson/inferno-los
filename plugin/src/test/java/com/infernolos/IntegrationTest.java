@@ -1,9 +1,6 @@
 package com.infernolos;
 
-import com.google.gson.Gson;
 import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -55,18 +52,18 @@ public class IntegrationTest
     @Test public void javaProducesTheBrowserFixture() throws Exception
     {
         Snapshot s=new Snapshot("wave",63,player,pillars,Arrays.asList(new Snapshot.Mob(41,NpcKind.MAGER,20,8),new Snapshot.Mob(6,NpcKind.RANGER,22,12)),Collections.emptyList());
-        Gson gson=new Gson();String url=s.toUrl("https://example.org/inferno/?old#old",gson);
+        String url=s.toUrl("https://example.org/inferno/?old#old");
         assertEquals("/inferno/",URI.create(url).getPath());assertNull(URI.create(url).getQuery());
-        String json=URLDecoder.decode(URI.create(url).getRawFragment().substring(3),StandardCharsets.UTF_8);
-        assertEquals(gson.toJson(s),json);assertEquals(6,s.mobs.get(0).id);
+        assertEquals("IL2-FKEBBT8CBgPyAikE_AEAANDSVrY",URI.create(url).getRawFragment());
+        assertEquals(6,s.mobs.get(0).id);
         Path fixture=Path.of("build","fixtures","wave-url.txt");Files.createDirectories(fixture.getParent());
-        Files.writeString(fixture,s.toUrl("http://127.0.0.1:5173/",gson));
+        Files.writeString(fixture,s.toUrl("http://127.0.0.1:5173/"));
     }
     @Test public void invalidUrlsAreRejected()
     {
         Snapshot s=new Snapshot("current",null,player,pillars,Collections.emptyList(),Collections.emptyList());
         for(String base:Arrays.asList("javascript:alert(1)","file:///tmp/test","data:text/html,test","https://user:pass@example.org","not a url"))
-        {try{s.toUrl(base,new Gson());fail(base);}catch(IllegalArgumentException expected){}}
+        {try{s.toUrl(base);fail(base);}catch(IllegalArgumentException expected){}}
     }
     @Test public void npcMappingsAndRegionBoundsMatchTheWebsite()
     {

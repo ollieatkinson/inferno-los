@@ -8,6 +8,7 @@ import {
 } from "./model";
 import { blocked, legal } from "./geometry";
 import { decodeScout } from "./scout";
+import { decodeCode, encodeCode } from "./shareCode";
 const integer = (v: unknown, min: number, max: number): v is number =>
   Number.isInteger(v) && (v as number) >= min && (v as number) <= max;
 function tile(v: unknown): v is Tile {
@@ -82,15 +83,22 @@ export function encodeLink(s: Scenario, base: string, steps?: Replay["steps"]) {
   const url = new URL(base);
   url.search = "";
   url.hash = "";
-  url.hash =
-    "v1=" +
-    encodeURIComponent(JSON.stringify(steps ? { scenario: s, steps } : s));
+  url.hash = encodeShareCode(s, steps);
   return url.toString();
 }
+export function encodeShareCode(s: Scenario, steps?: Replay["steps"]) {
+  const replay = validateReplay({ scenario: s, steps: steps ?? [] });
+  return encodeCode(replay.scenario, replay.steps);
+}
 export function decodeLink(input: string): Replay | null {
+  input = input.trim();
+  if (/^#?IL2-/.test(input))
+    return validateReplay(decodeCode(input.replace(/^#/, "")));
   if (!/^https?:\/\//i.test(input.trim()))
     return { scenario: validateScenario(decodeScout(input)), steps: [] };
   const url = new URL(input);
+  if (url.hash.startsWith("#IL2-"))
+    return validateReplay(decodeCode(url.hash.slice(1)));
   const scout =
     url.searchParams.get("scout") ??
     (url.hash.startsWith("#[") ? decodeURIComponent(url.hash.slice(1)) : null);
@@ -98,7 +106,9 @@ export function decodeLink(input: string): Replay | null {
     return { scenario: validateScenario(decodeScout(scout)), steps: [] };
   if (!url.hash && !url.search) return null;
   if (!url.hash.startsWith("#v1="))
-    throw new Error("Unrecognised link. Use an Inferno LoS v1 link.");
+    throw new Error(
+      "Unrecognised link. Use an Inferno LoS share link or code.",
+    );
   if (url.hash.length > 100000) throw new Error("This link is too large.");
   let data;
   try {
@@ -106,8 +116,14 @@ export function decodeLink(input: string): Replay | null {
   } catch {
     throw new Error("The link is incomplete or malformed.");
   }
-  const scenario = validateScenario(data.scenario ?? data);
-  const steps = data.steps ?? [];
+  return validateReplay(data);
+}
+function validateReplay(data: unknown): Replay {
+  if (!data || typeof data !== "object")
+    throw new Error("Invalid scenario data.");
+  const value = data as { scenario?: unknown; steps?: unknown };
+  const scenario = validateScenario(value.scenario ?? data);
+  const steps = value.steps ?? [];
   if (
     !Array.isArray(steps) ||
     steps.length > 256 ||

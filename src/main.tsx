@@ -13,7 +13,7 @@ import {
   type Tile,
 } from "./model";
 import { blocked, canAttack, legal, styles } from "./geometry";
-import { decodeLink, encodeLink } from "./links";
+import { decodeLink, encodeLink, encodeShareCode } from "./links";
 import { encodeScout } from "./scout";
 import { Simulation } from "./simulation";
 import { DRILLS, drillScenario, score, type Drill } from "./trainer";
@@ -97,6 +97,7 @@ function App() {
     [hints, setHints] = useState(true),
     [drill, setDrill] = useState<Drill>("alternating");
   const [finished, setFinished] = useState(false);
+  const jadTraining = trainer && (drill === "jad" || drill === "triple-jad");
   const stepRef = useRef(() => {}),
     playRef = useRef(playing);
   const tapeRef = useRef<HTMLDivElement>(null);
@@ -419,28 +420,29 @@ function App() {
         <button onClick={() => loadScene(emptyScenario())}>Clear</button>
       </section>
       <div className="options">
-        <span>Pillars:</span>
-        {PILLARS.map((p, i) => (
-          <button
-            key={p.name}
-            aria-pressed={scenario.pillars[i]}
-            onClick={() => {
-              const pillars = [...scenario.pillars] as Scenario["pillars"];
-              pillars[i] = !pillars[i];
-              const s = { ...scenario, pillars, pillarHp: undefined };
-              if (
-                blocked(s.player, pillars) ||
-                s.mobs.some((m) => !legal(m, s, false))
-              ) {
-                setMessage("Move away from that pillar before restoring it.");
-                return;
-              }
-              edit(s);
-            }}
-          >
-            {p.name} {scenario.pillars[i] ? "✓" : "×"}
-          </button>
-        ))}
+        {!jadTraining && <span>Pillars:</span>}
+        {!jadTraining &&
+          PILLARS.map((p, i) => (
+            <button
+              key={p.name}
+              aria-pressed={scenario.pillars[i]}
+              onClick={() => {
+                const pillars = [...scenario.pillars] as Scenario["pillars"];
+                pillars[i] = !pillars[i];
+                const s = { ...scenario, pillars, pillarHp: undefined };
+                if (
+                  blocked(s.player, pillars) ||
+                  s.mobs.some((m) => !legal(m, s, false))
+                ) {
+                  setMessage("Move away from that pillar before restoring it.");
+                  return;
+                }
+                edit(s);
+              }}
+            >
+              {p.name} {scenario.pillars[i] ? "✓" : "×"}
+            </button>
+          ))}
         <label>
           <input
             type="checkbox"
@@ -475,7 +477,7 @@ function App() {
       >
         <input
           aria-label="Position link or Scouter code"
-          placeholder="Paste a position link or Inferno Scouter code…"
+          placeholder="Paste a share link, IL2 code or Inferno Scouter code…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
@@ -491,6 +493,12 @@ function App() {
         <details>
           <summary>More ▾</summary>
           <div>
+            <button
+              type="button"
+              onClick={() => copy(encodeShareCode(scenario), "Share code")}
+            >
+              Copy share code
+            </button>
             <button type="button" onClick={exportCode}>
               Copy Scouter code
             </button>
@@ -557,6 +565,9 @@ function App() {
             south={south}
             showLos={showLos}
             showSpawns={showSpawns}
+            showPillars={!jadTraining}
+            playing={playing}
+            tickMs={speed}
             selected={selected}
             onMove={movePlayer}
             onPlace={place}
@@ -647,6 +658,8 @@ function App() {
               <p>
                 Use 1 / 2 / 3 to switch prayers. Press Play for a 60-tick drill,
                 or Space to learn one tick at a time.
+                {drill === "triple-jad" &&
+                  " The three Jads take turns, three ticks apart."}
               </p>
             </section>
           )}
@@ -701,7 +714,9 @@ function App() {
             )}
             {trainer && !hints && (
               <p className="muted">
-                Hints hidden. Read the attack countdowns and keep the rhythm.
+                {jadTraining
+                  ? "Hints hidden. Watch Jad’s attack animation and switch prayers before the hit."
+                  : "Hints hidden. Read the attack countdowns and keep the rhythm."}
               </p>
             )}
             {frame && (
@@ -860,7 +875,7 @@ function App() {
                   {threatStyles.length === 0
                     ? "No attacks have line of sight from the current positions."
                     : "Visible styles: " + threatStyles.join(" / ") + "."}{" "}
-                  Select a monster to isolate its LoS.
+                  All monsters’ LoS stays visible when selecting or dragging.
                 </p>
               )}
             </section>

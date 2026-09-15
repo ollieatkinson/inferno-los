@@ -1,6 +1,36 @@
-# Link contract, version 1
+# Link contract
 
-Full positions and replays use a URL fragment:
+## Compact share codes (IL2)
+
+New website and RuneLite links use a compact URL fragment:
+
+```text
+https://host/path/#IL2-FKEBBT8CBgPyAikE_AEAANDSVrY
+```
+
+The example represents wave 63 with player `(16,5)`, west/south pillars standing, ranger ID 6 at `(22,12)` and mager ID 41 at `(20,8)`. Its code is 31 characters, compared with 346 for the equivalent legacy JSON fragment. Codes are case-sensitive. The input accepts a full link, a bare `IL2-…` code, or `#IL2-…`. **Share position** copies a link; **More → Copy share code** copies just the code. Replay links use the same format.
+
+Each code contains its complete data; no shortening service or database is involved. It is reversible encoding, not encryption. Existing v1 JSON links and Scouter codes remain supported. Deploy an IL2-capable website before distributing the updated plugin.
+
+### Binary layout
+
+After `IL2-`, the payload is unpadded base64url (`A–Z`, `a–z`, `0–9`, `-`, `_`). Integers use unsigned LEB128 unless marked as one byte. Tiles use `y * 29 + x`. Fields appear in this order:
+
+1. One-byte flags: bits 0–1 are kind (`wave=0`, `current=1`, `custom=2`); bit 2 means wave present, bit 3 pillar HP present, bit 4 warnings present. Other bits are reserved and zero.
+2. Player tile, then one-byte standing pillar mask (west=1, north=2, south=4).
+3. Optional wave, followed by optional three pillar HP integers in west/north/south order.
+4. NPC count, followed by NPC records in array order: ID, one-byte type/flags, tile, then optional cooldown, pending check, attack count. The type occupies the low four bits; bits 4/5/6 indicate the three optional fields. A pending check is `(pendingTicks - 1) * 2 + style`, with magic=0, ranged=1.
+5. If warnings are present: count, followed by each UTF-8 byte length and its bytes.
+6. Replay run count, followed by each run's value and repetition count. Value is `tile * 4 + prayer` with off=0, magic=1, ranged=2, melee=3. Repeated identical player/prayer inputs are stored as one run. Plugin snapshots write zero runs.
+7. Four-byte little-endian FNV-1a checksum of all preceding bytes (offset basis `0x811c9dc5`, prime `0x01000193`, arithmetic modulo 2³²). This detects accidental corruption; it is not authentication.
+
+Permanent NPC type IDs 0–10 are `bat`, `blob`, `melee`, `ranger`, `mager`, `nibbler`, `mageBlob`, `rangeBlob`, `meleeBlob`, `jad`, `healer`. These IDs must not be reordered. `src/shareCode.ts` implements both directions; `plugin/.../ShareCode.java` writes current/wave snapshots. Both languages assert the example above as a fixed compatibility vector.
+
+Decoded data is subjected to the same game-state and replay validation as v1. Limits are 64 NPCs, 64 bounded notes, 256 expanded replay ticks and 100,000 encoded characters. Unknown flags/types, truncation, checksum errors, invalid footprints and invalid attack state are rejected.
+
+## Legacy JSON (v1)
+
+Previously generated full positions and replays use:
 
 ```text
 https://host/path/#v1=<percent-encoded UTF-8 JSON>

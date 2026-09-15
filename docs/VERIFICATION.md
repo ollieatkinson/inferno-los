@@ -1,5 +1,13 @@
 # Verification — 14 September 2026
 
+## Follow-up — 15 September 2026
+
+Compact sharing follow-up: 29 unit tests, 12 browser tests, 12 Java tests and both builds pass. The website and plugin generate identical IL2 bytes for the fixed two-NPC fixture (31 characters versus 346 for its legacy fragment). Tests cover all NPC types, high IDs, HP, Unicode notes, pending attacks, 256-tick replay runs, corruption, semantic validation, bare-code copy/paste, legacy imports, and opening the compiled Java link in Chromium. Encoding happens only when sharing; drag handling and LoS caching are unchanged.
+
+Jad follow-up: 24 unit tests and 11 browser tests pass, plus the production build. Single Jad retains an eight-tick cycle; Triple Jad uses three staggered nine-tick cycles, with 18 fully protectable hits in a 60-tick drill. Both drills remove pillars. Browser checks cover real frame changes, pause, manual steps, reset, both styles, returning to another drill, and successful decoding of all 45 animation PNGs. The dev server needed a restart to discover the new public asset directory; checking `href` alone did not detect its HTML fallback. Nine-monster dragging still measures 33.3 ms median / 33.5 ms p95 across two frames. Java 17 is now installed persistently through mise and Gradle resolves it without a temporary `JAVA_HOME`.
+
+Removed selection-based LoS filtering so all monsters' coverage stays visible during and after dragging. A browser regression test covers selection, movement, release, and newly overlapping coverage. The website checks were rerun: 23 unit tests, 10 browser tests, and the production build pass. With all nine monsters' LoS visible, the same 90-sample drag measurement returned 33.3 ms median / 33.5 ms p95 across two animation frames. Per-monster caching and animation-frame batching remain in place.
+
 ## Automated checks
 
 - `npm test`: **23 passing tests** for arena geometry, movement, link/Scouter codecs, queued attacks, trainer scoring and cache invalidation.

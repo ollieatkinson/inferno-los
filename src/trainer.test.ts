@@ -49,6 +49,45 @@ describe("Scouter interoperability", () => {
   });
 });
 describe("prayer training rules", () => {
+  it("Jad drills remove pillars and triple Jad stays three ticks apart for the full drill", () => {
+    for (const drill of ["jad", "triple-jad"] as const) {
+      const s = drillScenario(drill, emptyScenario());
+      expect(s.pillars).toEqual([false, false, false]);
+      expect(
+        decodeLink(encodeLink(s, "https://example.org/"))!.scenario,
+      ).toEqual(s);
+      const sim = new Simulation(s);
+      const checks = new Map<
+        number,
+        { id: number; style: "mage" | "range" | "melee" }
+      >();
+      for (let tick = 1; tick <= 60; tick++) {
+        const f = sim.step(s.player, checks.get(tick)?.style ?? null);
+        for (const cue of f.cues) {
+          expect(checks.has(tick + 3)).toBe(false);
+          checks.set(tick + 3, cue);
+        }
+        expect(f.attacks).toHaveLength(checks.has(tick) ? 1 : 0);
+        expect(f.scenario.mobs.map(({ x, y }) => [x, y])).toEqual(
+          s.mobs.map(({ x, y }) => [x, y]),
+        );
+      }
+      const hits = sim.frames.flatMap((f, i) =>
+        f.attacks.map((a) => ({ tick: i + 1, id: a.id })),
+      );
+      expect(hits.map((h) => h.tick)).toEqual(
+        drill === "triple-jad"
+          ? Array.from({ length: 18 }, (_, i) => 7 + i * 3)
+          : [7, 15, 23, 31, 39, 47, 55],
+      );
+      if (drill === "triple-jad")
+        expect(hits.map((h) => h.id)).toEqual(
+          Array.from({ length: 18 }, (_, i) => (i % 3) + 1),
+        );
+      expect(score(sim.frames).accuracy).toBe(100);
+      expect(score(sim.frames).conflicts).toBe(0);
+    }
+  });
   it("blob scans magic, attacks range three ticks later even after losing LoS", () => {
     const s = emptyScenario();
     s.mobs = [{ id: 1, type: "blob", x: 20, y: 7 }];

@@ -4,6 +4,7 @@ export const DRILLS = {
   alternating: "Ranger + mager",
   blob: "Blob + mager",
   jad: "Jad",
+  "triple-jad": "Triple Jad",
   current: "My current stack",
 } as const;
 export type Drill = keyof typeof DRILLS;
@@ -11,9 +12,20 @@ export function drillScenario(drill: Drill, current: Scenario): Scenario {
   if (drill === "current") return structuredClone(current);
   const s = emptyScenario();
   s.player = [16, 10];
-  if (drill === "jad")
-    s.mobs = [{ id: 1, type: "jad", x: 7, y: 10, cooldown: 4 }];
-  else
+  if (drill === "jad" || drill === "triple-jad") {
+    s.wave = drill === "jad" ? 67 : 68;
+    s.pillars = [false, false, false];
+    if (drill === "jad")
+      s.mobs = [{ id: 1, type: "jad", x: 7, y: 10, cooldown: 4 }];
+    else {
+      s.player = [14, 15];
+      s.mobs = [
+        { id: 1, type: "jad", x: 12, y: 7, cooldown: 4 },
+        { id: 2, type: "jad", x: 23, y: 22, cooldown: 7 },
+        { id: 3, type: "jad", x: 3, y: 22, cooldown: 10 },
+      ];
+    }
+  } else
     s.mobs = [
       { id: 1, type: "mager", x: 8, y: 10, cooldown: 4 },
       drill === "blob"

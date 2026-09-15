@@ -1,9 +1,6 @@
 package com.infernolos;
 
-import com.google.gson.Gson;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,15 +27,14 @@ final class Snapshot
     }
     int[] player() { return player.clone(); }
     boolean[] pillars() { return pillars.clone(); }
-    String toUrl(String base, Gson gson)
+    String toUrl(String base)
     {
         URI uri;
         try { uri = URI.create(base.trim()); } catch (RuntimeException e) { throw new IllegalArgumentException("Set a valid Website URL in Inferno LoS settings."); }
         if (!("https".equalsIgnoreCase(uri.getScheme()) || "http".equalsIgnoreCase(uri.getScheme())) || uri.getHost() == null || uri.getUserInfo() != null)
             throw new IllegalArgumentException("Website URL must be an http:// or https:// address.");
         String path = uri.getRawPath() == null ? "/" : uri.getRawPath();
-        String encoded = URLEncoder.encode(gson.toJson(this), StandardCharsets.UTF_8).replace("+", "%20");
-        return uri.getScheme() + "://" + uri.getRawAuthority() + path + "#v1=" + encoded;
+        return uri.getScheme() + "://" + uri.getRawAuthority() + path + "#" + ShareCode.encode(this);
     }
     static final class Mob
     {

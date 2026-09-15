@@ -16,11 +16,15 @@ This tracks the full request, including follow-up messages. A checked item means
 - [x] Keep Space to advance one tick; offer visible Step, Back, Play/Pause and Reset controls.
 - [x] Make stepping easy to understand: show movement, attacks, blob scans, and the relevant prayer, using OSRS icons.
 - [x] Keep monster/player dragging responsive: cache LoS per monster, avoid redundant tile updates, coalesce pointer events with animation frames, and measure performance in a populated scene.
+- [x] Keep every monster’s LoS visible when selecting a monster, throughout dragging, and after release; retain per-monster caching. Verified on 15 September with a browser regression test and the nine-monster performance test (33.5 ms p95 across two animation frames).
 - [x] Show current LoS/range and pillar blocking for Inferno monsters.
 - [x] Support standing/destroyed pillars in the editor and shared snapshots.
 - [x] Share arbitrary current positions, wave starts and recorded replays as links.
+- [x] Replace verbose JSON share links with compact, self-contained `IL2-…` codes in the website and RuneLite plugin; support copying/pasting bare codes, keep legacy links working, and verify corruption handling and Java/browser compatibility.
 - [x] Import Inferno Scouter spawn codes, including optional NPC ranks and north/south/west pillar HP. Export compatible codes when a scene fits that format.
 - [x] Add a prayer trainer with clickable prayers, keyboard controls, tick timing, practice drills, and feedback/accuracy/streak statistics.
+- [x] Add Triple Jad practice with three staggered Jads and a nine-tick cycle; remove pillars and their controls from both Jad drills.
+- [x] Show actual OSRS Jad stomp/rear-up animation frames, synchronized with ticks, speed, pause/resume and manual stepping; keep image animation independent of LoS rendering and verify all 45 assets decode in the browser.
 - [x] Make scoring reflect prayer checks, including the blob's scan/attack cycle and Jad's delayed prayer check. Clearly distinguish modeled timing from live-game timing.
 - [x] Preserve relevant Colosseum improvements: draggable NPCs, improved corner pathing, tick timeline, replay sharing, and convenient wave/current links. Colosseum-specific mobs/modifiers do not belong here.
 - [x] Keep the website available locally for review.
@@ -31,6 +35,14 @@ This tracks the full request, including follow-up messages. A checked item means
 - [x] Configure the website URL; document local use and deployment.
 - [x] Verify the full Java-generated-link-to-browser path, not just each component separately.
 
+## Hosting and submission follow-up (15 September 2026)
+
+- [x] Document Cloudflare Pages deployment, local plugin testing, and Plugin Hub submission in `docs/RELEASE.md`; prepare a static upload ZIP.
+- [ ] Authenticate Cloudflare, deploy the site and verify the production URL.
+- [ ] Set the plugin's default website URL to the verified production address.
+- [ ] Complete a logged-in Inferno playtest of current positions and wave captures.
+- [ ] Publish the standalone plugin repository and submit its tested commit to the Plugin Hub.
+
 ## Working preferences
 
 - Continue autonomously; the user has granted full permissions and asked not to be interrupted with permission questions.
@@ -39,14 +51,14 @@ This tracks the full request, including follow-up messages. A checked item means
 - Follow the layout in the user's Colosseum screenshot and [example position](https://los.colosim.com/?10074u.11102.08286.): big arena, compact controls, vertical tick tape immediately to its right.
 - Keep this plan updated as requirements are implemented and verified.
 
-## Current state (14 September 2026)
+## Current state (updated 15 September 2026)
 
 - Website built successfully with TypeScript and Vite; served locally at http://localhost:5173/.
 - Simplified arena-first layout, right-hand tick/prayer controls and vertical tape are implemented and visually inspected in both themes.
 - Actual OSRS images are local, credited, and checked for successful loading in the browser.
-- 23 engine/trainer/codec/cache tests pass.
+- 29 engine/trainer/codec/cache tests pass, including complete single/triple-Jad drill timing/scoring and compact-code compatibility, state preservation and invalid input handling.
 - 12 Java tests pass: capture lifecycle, immutable snapshots, URI generation, NPC/region mapping, rotated instance footprints, pillar objects, and sidebar actions.
-- 9 browser tests pass: both kinds of dragging, removal, storage preferences, Scouter codes, replay navigation, trainer timing/scoring, responsive layout, compiled Java link import, and nine-monster drag performance.
+- 12 browser tests pass: both kinds of dragging, all-monster LoS during selection and dragging, removal, storage preferences, compact share codes, Scouter codes, replay navigation, trainer timing/scoring, Jad animations and pillar removal, responsive layout, compiled Java link import, and nine-monster drag performance.
 - The nine-monster drag test's two-animation-frame samples measured 33.3 ms median and 33.5 ms p95 (90 samples on this machine). This is a local measurement, not a hardware-independent frame-rate guarantee. A cache test verifies that moving the player rebuilds no NPC maps and moving one NPC rebuilds only its map.
 - The plugin JAR is built at `plugin/build/libs/inferno-los-plugin-0.1.0.jar`. The standalone plugin has its own Gradle wrapper, README, license and attribution.
 - README, link-contract documentation, attribution, CI and a manually triggered Pages workflow are present.

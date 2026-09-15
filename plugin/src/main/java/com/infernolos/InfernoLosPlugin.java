@@ -1,6 +1,5 @@
 package com.infernolos;
 
-import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
@@ -36,7 +35,6 @@ public final class InfernoLosPlugin extends Plugin
     @Inject private ClientToolbar toolbar;
     @Inject private InfernoLosConfig config;
     @Inject private SceneCapture capture;
-    @Inject private Gson gson;
     private final WaveRecorder recorder = new WaveRecorder();
     private InfernoLosPanel panel;
     private NavigationButton navigation;
@@ -115,7 +113,7 @@ public final class InfernoLosPlugin extends Plugin
         if (!active) return;
         try
         {
-            String url = snapshot.toUrl(config.websiteUrl(), gson);
+            String url = snapshot.toUrl(config.websiteUrl());
             SwingUtilities.invokeLater(() -> {
                 if (!active) return;
                 if (copy)

@@ -17,8 +17,8 @@ Open **http://localhost:5173/**. No account or backend is needed. All scene and 
 - **Space** steps one game tick. The controls, prayer choices and vertical attack timeline sit beside the arena.
 - **1 / 2 / 3** select magic / ranged / melee protection; **0** turns prayer off. **P** plays or pauses, **R** resets, and the arrows move the player.
 - Toggle pillars, LoS shading and spawn tiles. Orientation and light/dark mode are remembered.
-- Paste a position/replay link or an Inferno Scouter code into the input. **Share position** includes current NPC positions and modeled attack state. **More → Copy replay link** includes recorded player movement and prayer choices.
-- **Prayer trainer** offers ranger/mager, blob/mager, Jad, or the current stack. Play a 60-tick drill at game speed (600 ms), or slow it down. Scores show protected/missed attacks, streaks, and prayer-off idle ticks. Hide hints for practice.
+- Paste a position/replay link, compact `IL2-…` share code or Inferno Scouter code into the input. **Share position** copies a compact link including current NPC positions and modeled attack state. **More → Copy share code** copies just the code; **Copy replay link** includes recorded player movement and prayer choices. Existing JSON links still load.
+- **Prayer trainer** offers ranger/mager, blob/mager, Jad, Triple Jad, or the current stack. Both Jad drills remove pillars and use actual stomp/rear-up animation frames. Triple Jad staggers attacks three ticks apart on nine-tick cycles. Play a 60-tick drill at game speed (600 ms), or slow it down. Scores show protected/missed attacks, streaks, and prayer-off idle ticks. Hide hints to practise reading the animations.
 
 ## RuneLite plugin
 
@@ -30,6 +30,8 @@ cd plugin
 ```
 
 Requires a JDK 17 installation. This launches a development RuneLite client with the plugin loaded. Enable **Inferno LoS**, open its sidebar, and leave the website URL set to `http://localhost:5173/` while developing locally.
+
+With mise installed, the repository's `mise.toml` selects Java 17: run `mise install` once, then `mise exec -- plugin/gradlew -p plugin run` from the repository root. This also works in shells where Java is not already on `PATH`.
 
 The sidebar captures NPC coordinates from spawn events, stores a button per wave, and keeps those buttons after leaving the Inferno. **Current LoS** captures current positions when clicked. Both actions have copy buttons. The next run's wave 1 clears the previous history. History is held for the current plugin session.
 
@@ -60,6 +62,8 @@ This is not a complete combat simulator. It does not model player pathfinding, d
 See [docs/LINKS.md](docs/LINKS.md) for the versioned plugin/website contract and Inferno Scouter compatibility. Scouter codes represent initial spawn slots, so arbitrary moved stacks use full position links instead.
 
 ## Deploy
+
+See [Cloudflare Pages and RuneLite release](docs/RELEASE.md) for hosting settings, local plugin testing, and the Plugin Hub submission process.
 
 `npm run build` produces a static `dist/` directory that can be served on any static host. Relative asset paths support subdirectory hosting. The optional GitHub Pages workflow can be run manually after creating a repository and enabling Pages with GitHub Actions. Set the plugin's **Website URL** to that deployed address.
 
