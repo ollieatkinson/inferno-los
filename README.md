@@ -54,7 +54,7 @@ This is not a complete combat simulator. It does not model player pathfinding, d
 
 Meleers now burrow: a first check after 50 ticks, then repeatable checks 40–60 ticks apart, provided they cannot attack and have not hit in the last 15 ticks. The practice model uses six ticks underground, two stationary emergence ticks, and a six-tick delay from resurfacing to the next possible attack. Destination selection follows the established LoS tools and avoids terrain. Select a meleer under **Monsters** to edit **Next dig check**; imported positions start with 50 ticks because live dig timers are not captured. The exact pending destination and timers survive position links, stepping back and replay.
 
-Inferno Stats' existing saved-wave URLs can be pasted into the website. A prepared contribution adds this site to its **Wave Tool** selector; see [the integration notes](docs/INFERNO_STATS.md).
+Inferno Stats' existing saved-wave URLs can be pasted into the website. [PR #20](https://github.com/InfernoStats/InfernoStats/pull/20) adds this site to its **Wave Tool** selector, with **Current LoS** and **Spawn LoS** actions exporting compact IL2 codes containing captured player, NPC and pillar positions; see [the integration notes](docs/INFERNO_STATS.md).
 
 ## Share format
 

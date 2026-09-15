@@ -94,6 +94,8 @@ The nine anchors are `(1,5), (22,5), (3,11), (23,12), (16,17), (5,23), (23,25), 
 
 ## Inferno Stats import
 
+The Inferno Tips contribution exports **Current LoS** and **Spawn LoS** using the IL2 format above, including captured player tiles, standing pillars and NPC indices. The query format below is accepted for importing links from older/existing Inferno Stats versions; it is not the contribution's export format for this site.
+
 The existing Inferno Stats format supplies `bat`, `blob`, `melee`, `ranger`, and `mager` query parameters containing JSON arrays of southwest tile pairs, for example `mager=[[1,5]]&copyable`. These use the same 29×30 grid as this site. Optional `source=inferno-stats`, `wave=63`, and `location=INFERNO` parameters identify the capture; marked empty captures stay empty rather than generating a random wave. Fight Caves links, captured Jad/Zuk waves and invalid coordinates are rejected. An IL2 fragment has precedence.
 
 The imported player tile, standing pillars and NPC order are practice defaults and are identified as such. Nibblers are not supplied. Sharing an imported scene generates a normal IL2 link.

@@ -29,7 +29,7 @@ This tracks the full request, including follow-up messages. A checked item means
 - [x] Preserve relevant Colosseum improvements: draggable NPCs, improved corner pathing, tick timeline, replay sharing, and convenient wave/current links. Colosseum-specific mobs/modifiers do not belong here.
 - [x] Keep the website available locally for review.
 - [x] Add meleer digging, visible burrow/emergence cues, editable next-check timing, delayed attacks and deterministic share/replay state. Verify underground collision/LoS, legal destinations, recent-attack restriction, rewind/resume and browser prayer checks. All 44 unit tests and 15 browser tests pass, including drag performance.
-- [x] Evaluate contributing to Inferno Stats: prepare a tested local `add-inferno-tips` branch adding a Wave Tool option and reuse its existing spawn query format on the website. Verify an actual Java-generated URL in the browser. See `docs/INFERNO_STATS.md`.
+- [x] Integrate with Inferno Stats through its Wave Tool config: explicit Current LoS and Spawn LoS actions, compact IL2 exports, captured player/pillars/NPC indices, immutable wave starts and scrolling sidebar. All 13 Java tests pass on Windows/Linux and both generated links were verified on the hosted site. See `docs/INFERNO_STATS.md`.
 - [x] Submit the Inferno Stats contribution for maintainer review: [PR #20](https://github.com/InfernoStats/InfernoStats/pull/20). Prefer this integration route for saved-wave links; retain the standalone plugin for current-position capture while integration develops.
 - [x] Keep Controls, timing & credits permanently expanded below the arena.
 - [x] Enter a wave number to generate a practice setup: correct lineups for waves 1–66, random unique standard spawn slots, central nibblers, and existing pillar-free Jad drills for 67–68. Repeat **Spawn wave** for a new layout, **Reset** to retry, and share exact positions with IL2 links. Support `?wave=63`; reject unsupported Zuk wave 69. Verified all 66 lineups against reference data, legal placements across 1,320 generated layouts, and browser generation/reset/reshuffle/sharing/Jad transitions. All 33 unit tests and 13 browser tests pass, including drag performance.
@@ -121,3 +121,11 @@ This tracks the full request, including follow-up messages. A checked item means
 | Reproducible validation/release path                   | `package-lock.json`, pinned RuneLite API, `.github/workflows/verify.yml`, manual Pages workflow                                          |
 
 The checklist covers the requested LoS/prayer-practice product. It does not assert support for combat mechanics explicitly excluded by the documented simulator scope, or claim live-game validation or publication.
+
+## Inferno Stats follow-up (15 September 2026)
+
+- [x] Replace the saved-wave destination through the existing config option; retain the upstream default and other tools.
+- [x] Generate compact IL2 codes for Inferno Tips; keep query arrays only for the other sites and legacy website imports.
+- [x] Add Current LoS capture and explicit Spawn LoS actions using recorded positions, never a random wave number.
+- [x] Update PR #20, native Windows development checkout/build, integration documentation and generated patch.
+- [ ] Complete an in-game Inferno playtest and address upstream review before retiring the standalone plugin.
