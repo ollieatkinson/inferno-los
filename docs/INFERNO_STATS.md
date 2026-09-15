@@ -2,9 +2,9 @@
 
 Contributing to [InfernoStats/InfernoStats](https://github.com/InfernoStats/InfernoStats) is the preferred first route for saved-wave links. It already captures waves and offers a **Wave Tool** choice between Line of Sight and Trainer. RuneLite's [contribution guide](https://github.com/runelite/plugin-hub#contribute-to-existing-plugins) also encourages extending existing plugins when the feature fits.
 
-The prepared local branch is `add-inferno-tips` in the sibling Inferno Stats checkout; commit `abd2ff6` adds **Inferno Tips** as an optional destination. A patch is available locally at `build/inferno-stats-link.patch` (generated artifact, not committed). No upstream PR or maintainer message has been sent.
+The prepared local branch is `add-inferno-tips` in the sibling Inferno Stats checkout; commit `d725924` adds **Inferno Tips** as an optional destination. A patch is available locally at `build/inferno-stats-link.patch` (generated artifact, not committed). No upstream PR or maintainer message has been sent.
 
-The production change is one enum entry plus wave/location query metadata. Existing destinations and the default remain unchanged. A JUnit test generates a real saved-wave URL and verifies the original default URL too. The website accepts Inferno Stats' existing JSON tile arrays, so the contribution needs neither our IL2 encoder nor another capture implementation.
+The production change is one enum entry plus wave/location query metadata and URL encoding of the spawn arrays. Existing destinations and the default remain unchanged. A JUnit test generates a real saved-wave URL and verifies the original default URL too. The website accepts Inferno Stats' existing JSON tile arrays, so the contribution needs neither our IL2 encoder nor another capture implementation.
 
 ## Verified
 

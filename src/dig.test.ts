@@ -13,6 +13,15 @@ function trapped() {
 }
 
 describe("meleer's dig", () => {
+  it("lets multiple meleers emerge on the same tile and resume attacking", () => {
+    const s = trapped();
+    s.mobs.push({ id: 2, type: "melee", x: 3, y: 11 });
+    for (const mob of s.mobs) mob.dig = { ...initialDig(), timer: 1 };
+    const sim = new Simulation(s);
+    for (let i = 0; i < 13; i++) sim.step(s.player, "melee");
+    expect(sim.frames[6].digs).toHaveLength(2);
+    expect(sim.frames[12].attacks).toHaveLength(2);
+  });
   it("checks at tick 50, burrows for six ticks and attacks six ticks after emergence", () => {
     const s = trapped(),
       sim = new Simulation(s);

@@ -28,7 +28,7 @@ This tracks the full request, including follow-up messages. A checked item means
 - [x] Make scoring reflect prayer checks, including the blob's scan/attack cycle and Jad's delayed prayer check. Clearly distinguish modeled timing from live-game timing.
 - [x] Preserve relevant Colosseum improvements: draggable NPCs, improved corner pathing, tick timeline, replay sharing, and convenient wave/current links. Colosseum-specific mobs/modifiers do not belong here.
 - [x] Keep the website available locally for review.
-- [x] Add meleer digging, visible burrow/emergence cues, editable next-check timing, delayed attacks and deterministic share/replay state. Verify underground collision/LoS, legal destinations, recent-attack restriction, rewind/resume and browser prayer checks. All 43 unit tests and 15 browser tests pass, including drag performance.
+- [x] Add meleer digging, visible burrow/emergence cues, editable next-check timing, delayed attacks and deterministic share/replay state. Verify underground collision/LoS, legal destinations, recent-attack restriction, rewind/resume and browser prayer checks. All 44 unit tests and 15 browser tests pass, including drag performance.
 - [x] Evaluate contributing to Inferno Stats: prepare a tested local `add-inferno-tips` branch adding a Wave Tool option and reuse its existing spawn query format on the website. Verify an actual Java-generated URL in the browser. See `docs/INFERNO_STATS.md`.
 - [ ] Submit the Inferno Stats contribution for maintainer review; no upstream PR or maintainer message has been sent.
 - [x] Keep Controls, timing & credits permanently expanded below the arena.

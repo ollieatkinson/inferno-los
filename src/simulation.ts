@@ -6,7 +6,7 @@ import {
   type Scenario,
   type Tile,
 } from "./model";
-import { canAttack, contains, legal, styles } from "./geometry";
+import { canAttack, contains, legal, overlaps, styles } from "./geometry";
 import { advanceDig, type DigEvent } from "./dig";
 export interface Attack {
   id: number;
@@ -111,6 +111,15 @@ export class Simulation {
   }
   private move(m: Mob, s: Scenario, player: Tile) {
     const size = NPCS[m.type].size;
+    // Digs can place NPCs on top of each other. Let an existing overlap
+    // separate; otherwise every one-tile move would remain blocked forever.
+    const movementScene = {
+      ...s,
+      mobs: s.mobs.filter(
+        (other) =>
+          other.id === m.id || !overlaps(m, size, other, NPCS[other.type].size),
+      ),
+    };
     if (contains(m.x, m.y, size, player)) {
       // A dig can emerge underneath the player. Step toward the closest edge
       // rather than trying to path to a tile already inside our footprint.
@@ -121,7 +130,7 @@ export class Simulation {
         { dx: 0, dy: -1, distance: m.y - player[1] + 1 },
       ].sort((a, b) => a.distance - b.distance);
       const exit = exits.find(({ dx, dy }) =>
-        legal({ ...m, x: m.x + dx, y: m.y + dy }, s),
+        legal({ ...m, x: m.x + dx, y: m.y + dy }, movementScene),
       );
       if (exit) {
         m.x += exit.dx;
@@ -133,7 +142,7 @@ export class Simulation {
       dy = Math.sign(player[1] - m.y);
     if (contains(m.x + dx, m.y + dy, size, player)) dy = 0;
     const valid = (x: number, y: number) =>
-      legal({ ...m, x: m.x + x, y: m.y + y }, s);
+      legal({ ...m, x: m.x + x, y: m.y + y }, movementScene);
     if (valid(dx, dy) && (size > 1 || (valid(dx, 0) && valid(0, dy)))) {
       m.x += dx;
       m.y += dy;
