@@ -318,3 +318,39 @@ test("a delayed browser tick pauses instead of advancing a misleading burst", as
     "mage",
   );
 });
+
+for (const width of [1280, 390]) {
+  test(`finishing and retrying at ${width}px keeps the prayer controls in place`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await open(page);
+    await page
+      .getByRole("button", { name: "Prayer trainer", exact: true })
+      .click();
+    await page.getByRole("button", { name: "▶ Play", exact: true }).click();
+    await page.clock.runFor(59 * 600);
+    await page
+      .locator(".prayer-panel")
+      .evaluate((el) => el.scrollIntoView({ block: "center" }));
+    const positions = () =>
+      page.evaluate(() => ({
+        scroll: scrollY,
+        controls: document.querySelector(".prayers")!.getBoundingClientRect()
+          .top,
+      }));
+    const before = await positions();
+    await page.clock.runFor(600);
+    expect(await positions()).toEqual(before);
+    const retry = page.getByRole("button", { name: "Retry", exact: true });
+    await expect(retry).toBeInViewport();
+    await retry.click();
+    await expect(page.getByTestId("tick-count")).toHaveText("Tick 0 / 60");
+    await expect(
+      page.getByRole("button", { name: "Ⅱ Pause", exact: true }),
+    ).toBeVisible();
+    expect(await positions()).toEqual(before);
+    await page.clock.runFor(600);
+    await expect(page.getByTestId("tick-count")).toHaveText("Tick 1 / 60");
+  });
+}

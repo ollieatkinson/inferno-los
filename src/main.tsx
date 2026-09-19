@@ -298,6 +298,11 @@ function App() {
     loadScene(initial);
     setReplay(saved);
   }
+  function retry() {
+    reset();
+    setStarted(true);
+    setPlaying(true);
+  }
   function back() {
     if (tick === 0) return;
     setPlaying(false);
@@ -757,6 +762,7 @@ function App() {
             <PrayerControls
               lit={prayerControls.lit}
               active={prayerControls.active}
+              onRetry={finished ? retry : undefined}
               onPrayer={prayerControls.toggle}
               deadline={tickDeadline}
               paused={clockMode === "paused"}

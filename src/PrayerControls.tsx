@@ -13,12 +13,14 @@ export function PrayerControls({
   lit,
   active,
   onPrayer,
+  onRetry,
   deadline,
   paused,
 }: {
   lit: Prayer[];
   active: Prayer | null;
   onPrayer: (prayer: Prayer) => void;
+  onRetry?: () => void;
   deadline: RefObject<number | null>;
   paused: boolean;
 }) {
@@ -70,9 +72,18 @@ export function PrayerControls({
         </span>
         <TickMeter deadline={deadline} paused={paused} />
       </div>
-      <p className="active-prayer">
-        Active: {active ? prayerName[active] : "None"}
-      </p>
+      <div className="active-prayer">
+        <span>
+          {onRetry
+            ? "Drill complete"
+            : `Active: ${active ? prayerName[active] : "None"}`}
+        </span>
+        {onRetry && (
+          <button type="button" onClick={onRetry}>
+            Retry
+          </button>
+        )}
+      </div>
       <p className="prayer-help">
         Click a prayer to toggle it. Circles settle on the tick.
       </p>

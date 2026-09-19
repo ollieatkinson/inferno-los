@@ -1026,3 +1026,15 @@ aside .timeline {
     width: 100%;
   }
 }
+
+.active-prayer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 32px;
+}
+.active-prayer button {
+  padding: 6px 12px;
+  font-size: 11px;
+}
