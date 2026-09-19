@@ -10,6 +10,7 @@ import {
   HEIGHT,
   type Mob,
   type NpcType,
+  type Prayer,
   type Scenario,
   type Tile,
 } from "./model";
@@ -85,6 +86,7 @@ interface Props {
   scenario: Scenario;
   before?: Scenario;
   frame?: Frame;
+  activePrayer: Prayer | null;
   tick: number;
   mode: NpcType | "player";
   south: boolean;
@@ -104,6 +106,7 @@ export function Arena({
   scenario: s,
   before,
   frame,
+  activePrayer,
   tick,
   mode,
   south,
@@ -443,9 +446,11 @@ export function Arena({
               width="20"
               height="24"
             />
-            {frame?.prayer && (
+            {activePrayer && (
               <image
-                href={prayerIcon(frame.prayer)}
+                data-testid="player-prayer"
+                data-prayer={activePrayer}
+                href={prayerIcon(activePrayer)}
                 x={s.player[0] * 20 + 1}
                 y={s.player[1] * 20 - 21}
                 width="18"

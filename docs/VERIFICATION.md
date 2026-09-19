@@ -43,3 +43,11 @@ cd ../inferno-los-plugin
 ```
 
 The normal website remains available through `npm run dev` at http://localhost:5173/.
+
+## Prayer mechanics port — 19 September 2026
+
+The three-prayer controls now use the companion inferno-tips behavior. `npm test` passes 47 unit tests, `npm run build` succeeds, and the full Chromium suite passes 23 browser tests. The browser run used `PLAYWRIGHT_PORT=5184` because another project occupied port 5173.
+
+New checks cover immediate pointer-down input, tick reconciliation and overheads, independent local circle bits, pause/manual step/Back/Reset, keyboard activation, replay restoration, and pausing after a delayed browser tick. A complete 60-tick ranger/mager drill stays on schedule and scores 100% using two-tick alternating. Touch emulation switches for 24 consecutive ticks with overlapping fingers and verifies that dragging a prayer does not scroll the page. Real audio buffers are decoded; tests verify tick-delayed playback, off-before-on coalescing, discarded Reset audio, pause behavior, volume and persisted mute preferences.
+
+Chrome DevTools inspection at 1280×1000 and touch-emulated 390×844 confirmed the live-clock circle overlap and settled overhead, a single meter, no horizontal overflow, 111×69 px mobile prayer buttons, and no console errors. Desktop dark and mobile light/dark screenshots were inspected, including the Settings popover. These touch checks are browser emulation, not a physical-device playtest.

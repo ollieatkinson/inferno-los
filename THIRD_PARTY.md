@@ -14,6 +14,12 @@ Local files in `public/icons/`:
 
 All images are served locally, so interacting with the arena does not depend on hotlinked assets.
 
+## Prayer controls and sounds
+
+- `public/prayers/active.png`, `mage.png`, `range.png`, `melee.png`: original prayer highlight and transparent protection icons from [Resource Packs’ vanilla prayer assets](https://github.com/melkypie/resource-packs/tree/522616b3561b3468d912c59136298c4adf9868b3/prayer), copied from the companion inferno-tips site.
+- `public/sounds/{mage,range,melee}-{on,off}.ogg`: original game prayer sounds from [OldSchoolSDK assets](https://github.com/OldSchoolSDK/osrs-sdk/tree/04fdaee3d155238e54cf16c1ac259f6c2b210078/src/assets/sounds), copied from inferno-tips. Artwork and sounds remain © Jagex; the project’s code license does not cover them.
+- The controls port inferno-tips’ established behavior: immediate local icon bits, one protection sampled at the tick, independent circle reconciliation, and per-prayer sound flags emitted off-before-on. References are the SDK’s `BasePrayer`, `Player`, `ClickController` and `World` implementations at the revision above. Playback uses a browser clock; it does not reconstruct a live OSRS server tick.
+
 ## Design and behavioral references
 
 The TypeScript and Java implementation was written for this project. These projects were inspected to establish feature behavior, coordinates and game rules:

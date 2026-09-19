@@ -20,10 +20,14 @@ Open **http://localhost:5173/**. No account or backend is needed. All scene and 
 - Click or drag the player to explore tiles. Drag monsters to rearrange them; double-click to remove.
 - Enter a **Wave** number and click **Spawn wave** to practise its monster lineup. Waves 1–66 use random assignments to the nine spawn slots; click again for a new layout, or **Reset** to retry the same one. Waves 67–68 load pillar-free Jad setups. Open `https://los.inferno.tips/?wave=63` for a random wave 63; **Share position** saves its exact layout. Wave 69 is not available because Zuk is not simulated. Nibblers appear in their central spawn area, but their movement and pillar damage are not simulated.
 - **Space** steps one game tick. The controls, prayer choices and vertical attack timeline sit beside the arena.
-- **1 / 2 / 3** select magic / ranged / melee protection; **0** turns prayer off. **P** plays or pauses, **R** resets, and the arrows move the player.
+- Click or tap one of the three prayers to toggle it. Presses register immediately, including overlapping fingers on touchscreens. **P** plays or pauses, **R** resets, and the arrows move the player. Tab and Space/Enter also operate the prayer buttons.
 - Toggle pillars, LoS shading and spawn tiles. Orientation and light/dark mode are remembered.
 - Paste a position/replay link, compact `IL2-…` share code or Inferno Scouter code into the input. **Share position** copies a compact link including current NPC positions and modeled attack state. **More → Copy share code** copies just the code; **Copy replay link** includes recorded player movement and prayer choices.
-- **Prayer trainer** offers ranger/mager, blob/mager, Jad, Triple Jad, or the current stack. Both Jad drills remove pillars and use actual stomp/rear-up animation frames. Triple Jad staggers attacks three ticks apart on nine-tick cycles. Play a 60-tick drill at game speed (600 ms), or slow it down. Scores show protected/missed attacks, streaks, and prayer-off idle ticks. Hide hints to practise reading the animations.
+- **Prayer trainer** offers ranger/mager, blob/mager, Jad, Triple Jad, or the current stack. Both Jad drills remove pillars and use actual stomp/rear-up animation frames. Triple Jad staggers attacks three ticks apart on nine-tick cycles. Play a 60-tick drill at game speed (600 ms), or use **Step +1** to study individual ticks. Scores show protected/missed attacks, streaks, and prayer-off idle ticks. Hide hints to practise reading the animations.
+
+The small meter beside the prayers follows a fixed 600 ms clock, including before playback starts. A press toggles that icon’s circle immediately; other lit circles remain until the tick reconciles them with the selected protection. The overhead, attack protection and native prayer sounds update on that tick. Briefly overlapping circles do not mean two protection prayers apply. Pausing freezes reconciliation; manual stepping commits one tick. Back, Reset and replays restore recorded protection and discard queued sounds.
+
+**Settings** contains persistent prayer sound and volume controls. No inventory or full prayer book is needed here.
 
 ## RuneLite plugin
 
@@ -40,7 +44,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-Website tests use a committed plugin contract fixture, so they run independently. Both repositories assert the same IL2 code. For a fresh cross-repository check, build the plugin and run the browser tests with `INFERNO_PLUGIN_FIXTURE_PATH=../inferno-los-plugin/build/fixtures/wave-url.txt`. To use an existing Chromium binary, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
+Website tests use a committed plugin contract fixture, so they run independently. Both repositories assert the same IL2 code. For a fresh cross-repository check, build the plugin and run the browser tests with `INFERNO_PLUGIN_FIXTURE_PATH=../inferno-los-plugin/build/fixtures/wave-url.txt`. To use an existing Chromium binary, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Set `PLAYWRIGHT_PORT` to use a free test port (default 5173).
 
 Browser tests cover dragging both player and NPCs, double-click deletion, persisted preferences, Scouter codes, replay navigation, trainer timing/scoring, desktop/mobile layout, a Java-generated snapshot, and populated-scene drag performance. The LoS engine caches per-monster maps and batches pointer movement with animation frames.
 
@@ -50,7 +54,7 @@ The map uses the established Inferno LoS tool's 29×30 coordinate grid and three
 
 Blobs scan protection and schedule the opposite ranged/magic attack three ticks later; their cycle is six ticks. Jad has a windup and a prayer check three ticks later. The trainer uses reproducible choices for unknown styles. A pending blob/Jad attack is retained in a shared current-position link. The website never claims to recover live attack cooldowns from a positional snapshot: initial delays are editable.
 
-This is not a complete combat simulator. It does not model player pathfinding, damage/HP, NPC resurrection, nibbler AI, or Zuk/shield mechanics. Movement places the player at the chosen tile, then stepping moves NPCs. Zuk-wave links explicitly identify their supported-adds-only scope. An accuracy score measures this simulator's prayer checks; idle ticks are not a calculation of prayer-point drain. Browser playback pauses when the tab is hidden.
+This is not a complete combat simulator. It does not model player pathfinding, damage/HP, NPC resurrection, nibbler AI, or Zuk/shield mechanics. Movement places the player at the chosen tile, then stepping moves NPCs. Zuk-wave links explicitly identify their supported-adds-only scope. An accuracy score measures this simulator's prayer checks; idle ticks are not a calculation of prayer-point drain. Browser playback pauses when the tab is hidden or a tick is delayed by more than 250 ms.
 
 Meleers now burrow: a first check after 50 ticks, then repeatable checks 40–60 ticks apart, provided they cannot attack and have not hit in the last 15 ticks. The practice model uses six ticks underground, two stationary emergence ticks, and a six-tick delay from resurfacing to the next possible attack. Destination selection follows the established LoS tools and avoids terrain. Select a meleer under **Monsters** to edit **Next dig check**; imported positions start with 50 ticks because live dig timers are not captured. The exact pending destination and timers survive position links, stepping back and replay.
 

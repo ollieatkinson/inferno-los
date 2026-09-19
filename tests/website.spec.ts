@@ -2,7 +2,10 @@ import { test, expect } from "@playwright/test";
 import { encodeLink } from "../src/links";
 import type { Scenario } from "../src/model";
 const sceneUrl = (scene: unknown) =>
-  encodeLink(scene as Scenario, "http://127.0.0.1:5173/");
+  encodeLink(
+    scene as Scenario,
+    `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? "5173"}/`,
+  );
 const snapshot = {
   version: 1,
   kind: "wave",
@@ -46,6 +49,13 @@ test("plugin snapshots load, stepping shows the prayer and replay opens in the s
   await expect(page.locator(".timeline")).toContainText("Replay 0 / 1");
   await page.getByRole("button", { name: /Step \+1/ }).click();
   await expect(page.locator(".last-tick")).toContainText("Protected");
+  await expect(page.getByTestId("player-prayer")).toHaveAttribute(
+    "data-prayer",
+    "range",
+  );
+  await expect(
+    page.getByRole("button", { name: "Protect from Missiles", exact: true }),
+  ).toHaveAttribute("data-lit", "true");
   expect(errors).toEqual([]);
 });
 test("player and monsters drag, double-click deletes, preferences survive reload", async ({
@@ -155,7 +165,8 @@ test("loads ranked Scouter code with pillar HP and reports malformed input", asy
 test("trainer scores hits and prayer input does not postpone game ticks", async ({
   page,
 }) => {
-  await page.clock.install();
+  await page.clock.install({ time: 0 });
+  await page.clock.pauseAt(1000);
   await page.goto("/");
   await page
     .getByRole("button", { name: "Prayer trainer", exact: true })
@@ -163,9 +174,14 @@ test("trainer scores hits and prayer input does not postpone game ticks", async 
   await page.getByRole("button", { name: "▶ Play", exact: true }).click();
   for (let i = 0; i < 4; i++) {
     await page.clock.runFor(300);
-    await page.keyboard.press("0");
+    if (i > 0)
+      await page
+        .getByRole("button", { name: "Protect from Magic", exact: true })
+        .click();
     await page.clock.runFor(200);
-    await page.keyboard.press("1");
+    await page
+      .getByRole("button", { name: "Protect from Magic", exact: true })
+      .click();
     await page.clock.runFor(100);
   }
   await expect(page.getByTestId("tick-count")).toHaveText("Tick 4 / 60");
@@ -174,7 +190,9 @@ test("trainer scores hits and prayer input does not postpone game ticks", async 
   await page.getByRole("button", { name: "Ⅱ Pause", exact: true }).click();
   await page.clock.runFor(1200);
   await expect(page.getByTestId("tick-count")).toHaveText("Tick 4 / 60");
-  await page.keyboard.press("2");
+  await page
+    .getByRole("button", { name: "Protect from Missiles", exact: true })
+    .click();
   await page.keyboard.press("Space");
   await page.keyboard.press("Space");
   await expect(page.locator(".score-panel")).toContainText("2/2");
@@ -217,7 +235,7 @@ test("opens the RuneLite plugin contract fixture", async ({ page }) => {
     "utf8",
   );
   expect(new URL(url).hash).toBe("#IL2-FKEBBT8CBgPyAikE_AEAANDSVrY");
-  await page.goto(url);
+  await page.goto("/" + new URL(url).hash);
   await expect(page.locator(".board-header")).toContainText("Wave 63");
   await expect(page.getByTestId("mob-41")).toBeVisible();
   await expect(page.getByTestId("mob-6")).toBeVisible();

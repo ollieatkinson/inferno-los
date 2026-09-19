@@ -385,15 +385,6 @@ details[open] > div {
   height: 100%;
   background: var(--accent);
   transform-origin: left;
-  animation: tick linear forwards;
-}
-@keyframes tick {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
 }
 .attack-ray {
   animation: flash 0.6s ease-out;
@@ -442,15 +433,116 @@ h2 small {
   padding: 7px 4px;
   font-size: 10px;
 }
-.prayers .off {
-  flex: 0;
-  padding: 8px;
-  justify-content: center;
+.prayers button,
+.prayers button[aria-pressed="true"] {
+  background: var(--control);
+  border-color: var(--border);
+  min-height: 66px;
+  min-width: 44px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
-.prayers img {
-  width: 27px;
-  height: 27px;
+.prayers button:hover {
+  border-color: var(--accent);
+}
+.prayer-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  isolation: isolate;
+}
+.prayers .prayer-icon img {
+  width: 30px;
+  height: 30px;
   object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.prayer-icon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url("/prayers/active.png") center / 38px 38px no-repeat;
+  image-rendering: pixelated;
+  opacity: 0;
+}
+.prayers [data-lit="true"] .prayer-icon::before {
+  opacity: 1;
+}
+.prayer-clock {
+  margin-top: 12px;
+}
+.prayer-clock > span {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+.prayer-clock .tick-track {
+  height: 5px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.active-prayer {
+  margin: 10px 0 0;
+  font-size: 11px;
+}
+.prayer-help {
+  margin: 5px 0 0;
+  font-size: 10px;
+  color: var(--muted);
+}
+.site-settings {
+  position: relative;
+  margin-left: auto;
+}
+.site-settings summary {
+  cursor: pointer;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+  background: var(--control);
+}
+.site-settings > div {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 10;
+  width: 240px;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  box-shadow: 0 4px 16px #0003;
+}
+.site-settings label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.site-settings label + label {
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.site-settings input[type="range"] {
+  width: 135px;
+}
+.site-settings output {
+  font-size: 11px;
+}
+.site-settings p {
+  font-size: 11px;
+}
+header .theme-toggle {
+  margin-left: 0;
 }
 .next-prayer {
   margin-top: 14px;
@@ -790,10 +882,6 @@ td img {
   .prayers button {
     font-size: 9px;
   }
-  .prayers img {
-    width: 24px;
-    height: 24px;
-  }
   .recommendation strong {
     font-size: 14px;
   }
@@ -838,9 +926,6 @@ td img {
 }
 .right-controls .playback kbd {
   display: none;
-}
-.right-controls .tick-track {
-  height: 4px;
 }
 .mob-details {
   border: 1px solid var(--border);

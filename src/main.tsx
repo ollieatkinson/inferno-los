@@ -19,9 +19,15 @@ import { Simulation } from "./simulation";
 import { DRILLS, drillScenario, score, type Drill } from "./trainer";
 import { waveScenario } from "./waves";
 import { initialDig } from "./dig";
+import { usePrayerController } from "./usePrayerController";
+import { PrayerControls, prayerName } from "./PrayerControls";
+import { useGameClock, TICK_MS } from "./GameClock";
 import "./style.css";
 
-function usePreference<T extends string | boolean>(key: string, fallback: T) {
+function usePreference<T extends string | boolean | number>(
+  key: string,
+  fallback: T,
+) {
   const [value, setValue] = useState<T>(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(key) ?? "null");
@@ -39,12 +45,6 @@ function usePreference<T extends string | boolean>(key: string, fallback: T) {
   }, [key, value]);
   return [value, setValue] as const;
 }
-const prayers: Prayer[] = ["mage", "range", "melee"];
-const prayerName: Record<Prayer, string> = {
-  mage: "Magic",
-  range: "Missiles",
-  melee: "Melee",
-};
 const basics: NpcType[] = [
   "bat",
   "blob",
@@ -89,10 +89,25 @@ function App() {
     [showSpawns, setShowSpawns] = useState(false);
   const [message, setMessage] = useState(initial.error),
     [input, setInput] = useState("");
-  const [prayer, setPrayer] = useState<Prayer | null>(null);
+  const [prayerSound, setPrayerSound] = usePreference<boolean>(
+    "inferno-los-prayer-sound",
+    true,
+  );
+  const [prayerVolume, setPrayerVolume] = usePreference<number>(
+    "inferno-los-prayer-volume",
+    50,
+  );
+  const [soundError, setSoundError] = useState(false);
+  const prayerControls = usePrayerController(
+    prayerSound,
+    Math.max(0, Math.min(100, prayerVolume)),
+    () => setSoundError(true),
+  );
+  const prayer = prayerControls.selected;
   const [tick, setTick] = useState(0),
-    [playing, setPlaying] = useState(false),
-    [speed, setSpeed] = useState(600);
+    [playing, setPlaying] = useState(false);
+  const [started, setStarted] = useState(false);
+  const [clockEpoch, setClockEpoch] = useState(0);
   const [replay, setReplay] = useState(initial.data?.steps ?? []),
     [replayTick, setReplayTick] = useState(0);
   const [trainer, setTrainer] = useState(false),
@@ -103,6 +118,21 @@ function App() {
   const jadTraining = scenario.wave === 67 || scenario.wave === 68;
   const stepRef = useRef(() => {}),
     playRef = useRef(playing);
+  const clockMode = playing
+    ? "playing"
+    : !started || finished
+      ? "idle"
+      : "paused";
+  const tickDeadline = useGameClock(
+    clockMode,
+    clockEpoch,
+    () => stepRef.current(),
+    () => prayerControls.commit(),
+    () => {
+      setPlaying(false);
+      setMessage("Paused after a browser delay. Resume when you are ready.");
+    },
+  );
   const tapeRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const tape = tapeRef.current;
@@ -139,11 +169,6 @@ function App() {
       theme === "light" ? "light" : "dark";
   }, [theme]);
   useEffect(() => {
-    if (!playing) return;
-    const timer = setInterval(() => stepRef.current(), speed);
-    return () => clearInterval(timer);
-  }, [playing, speed]);
-  useEffect(() => {
     const pause = () => {
       if (document.hidden && playRef.current) {
         setPlaying(false);
@@ -158,6 +183,8 @@ function App() {
 
   function loadScene(s: Scenario) {
     setPlaying(false);
+    setStarted(false);
+    setClockEpoch((epoch) => epoch + 1);
     sim.current = new Simulation(s);
     setScenario(s);
     setTick(0);
@@ -165,7 +192,7 @@ function App() {
     setFinished(false);
     setReplay([]);
     setReplayTick(0);
-    setPrayer(null);
+    prayerControls.restore(null);
     if (s.wave !== undefined) setWaveInput(String(s.wave));
   }
   function spawnWave() {
@@ -245,15 +272,17 @@ function App() {
       setFinished(trainer);
       return;
     }
+    setStarted(true);
     const action = replay[replayTick];
-    const f = sim.current.step(
-      action?.player ?? scenario.player,
-      action ? action.prayer : prayer,
-    );
+    const prayerAtTick = action
+      ? action.prayer
+      : prayerControls.selectedRef.current;
+    const f = sim.current.step(action?.player ?? scenario.player, prayerAtTick);
+    if (action) prayerControls.restore(prayerAtTick);
+    else prayerControls.commit(prayerAtTick);
     setScenario(f.scenario);
     setTick(sim.current.frames.length);
     if (action) {
-      setPrayer(action.prayer);
       setReplayTick(replayTick + 1);
       if (replayTick + 1 >= replay.length) setPlaying(false);
     }
@@ -272,15 +301,18 @@ function App() {
   function back() {
     if (tick === 0) return;
     setPlaying(false);
+    setStarted(true);
     setFinished(false);
     sim.current.rewind(tick - 1);
     setScenario(sim.current.scenario);
     setTick(tick - 1);
-    setPrayer(sim.current.steps.at(-1)?.prayer ?? null);
+    prayerControls.restore(sim.current.steps.at(-1)?.prayer ?? null);
     setReplayTick(Math.max(0, replayTick - 1));
   }
-  function togglePrayer(p: Prayer | null) {
-    setPrayer((old) => (old === p ? null : p));
+  function togglePlaying() {
+    if (finished) return;
+    setStarted(true);
+    setPlaying((v) => !v);
   }
   function chooseDrill(d: Drill) {
     setDrill(d);
@@ -302,14 +334,9 @@ function App() {
         return;
       }
       if (e.repeat) return;
-      if (["1", "2", "3", "0"].includes(key)) {
-        e.preventDefault();
-        togglePrayer(key === "0" ? null : prayers[Number(key) - 1]);
-        return;
-      }
       if (key === "p") {
         e.preventDefault();
-        if (!finished) setPlaying((v) => !v);
+        togglePlaying();
       }
       if (key === "r") {
         e.preventDefault();
@@ -398,6 +425,46 @@ function App() {
             Prayer trainer
           </button>
         </nav>
+        <details className="site-settings">
+          <summary
+            onKeyDown={(e) => {
+              if (e.key === " ") e.stopPropagation();
+            }}
+          >
+            Settings
+          </summary>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={prayerSound}
+                onChange={(e) => {
+                  setPrayerSound(e.target.checked);
+                  setSoundError(false);
+                }}
+              />{" "}
+              Prayer sounds
+            </label>
+            <label>
+              Prayer volume{" "}
+              <input
+                type="range"
+                aria-label="Prayer volume"
+                min="0"
+                max="100"
+                value={prayerVolume}
+                onChange={(e) => setPrayerVolume(Number(e.target.value))}
+              />
+              <output>{prayerVolume}%</output>
+            </label>
+            {soundError && (
+              <p role="status">
+                Prayer audio is unavailable. You can still use the visual tick
+                cue.
+              </p>
+            )}
+          </div>
+        </details>
         <button
           className="theme-toggle"
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
@@ -604,6 +671,7 @@ function App() {
             scenario={scenario}
             before={tick ? before : undefined}
             frame={frame}
+            activePrayer={prayerControls.active}
             tick={tick}
             mode={mode}
             south={south}
@@ -611,7 +679,7 @@ function App() {
             showSpawns={showSpawns}
             showPillars={!jadTraining}
             playing={playing}
-            tickMs={speed}
+            tickMs={TICK_MS}
             selected={selected}
             onMove={movePlayer}
             onPlace={place}
@@ -634,7 +702,7 @@ function App() {
               >
                 ← Back
               </button>
-              <button disabled={finished} onClick={() => setPlaying(!playing)}>
+              <button disabled={finished} onClick={togglePlaying}>
                 {playing ? "Ⅱ Pause" : "▶ Play"}
               </button>
               <button
@@ -648,14 +716,6 @@ function App() {
                 Tick {tick}
                 {trainer ? " / 60" : ""}
               </strong>
-            </div>
-            <div className="tick-track">
-              {playing && (
-                <div
-                  key={`${tick}-${speed}`}
-                  style={{ animationDuration: `${speed}ms` }}
-                />
-              )}
             </div>
           </section>
           {trainer && (
@@ -676,21 +736,6 @@ function App() {
               </label>
               <div className="trainer-options">
                 <label>
-                  Tick speed{" "}
-                  <select
-                    aria-label="Tick speed"
-                    value={speed}
-                    onChange={(e) => {
-                      setPlaying(false);
-                      setSpeed(Number(e.target.value));
-                    }}
-                  >
-                    <option value={600}>Game · 0.6s</option>
-                    <option value={1000}>Slow · 1s</option>
-                    <option value={1500}>Learn · 1.5s</option>
-                  </select>
-                </label>
-                <label>
                   <input
                     type="checkbox"
                     checked={hints}
@@ -700,8 +745,8 @@ function App() {
                 </label>
               </div>
               <p>
-                Use 1 / 2 / 3 to switch prayers. Press Play for a 60-tick drill,
-                or Space to learn one tick at a time.
+                Click prayers to toggle them. Press Play for a 60-tick drill at
+                game speed, or Space to learn one tick at a time.
                 {drill === "triple-jad" &&
                   " The three Jads take turns, three ticks apart."}
               </p>
@@ -709,27 +754,13 @@ function App() {
           )}
           <section className="prayer-panel">
             <h2>{trainer ? "Your prayer" : "Choose your prayer"}</h2>
-            <div className="prayers">
-              {prayers.map((p, i) => (
-                <button
-                  key={p}
-                  aria-label={"Protect from " + prayerName[p]}
-                  aria-pressed={prayer === p}
-                  onClick={() => togglePrayer(p)}
-                >
-                  <PrayerImage prayer={p} />
-                  <span>{prayerName[p]}</span>
-                  <kbd>{i + 1}</kbd>
-                </button>
-              ))}
-              <button
-                className="off"
-                aria-pressed={prayer === null}
-                onClick={() => setPrayer(null)}
-              >
-                Off<kbd>0</kbd>
-              </button>
-            </div>
+            <PrayerControls
+              lit={prayerControls.lit}
+              active={prayerControls.active}
+              onPrayer={prayerControls.toggle}
+              deadline={tickDeadline}
+              paused={clockMode === "paused"}
+            />
             {(!trainer || hints) && (
               <div className="next-prayer" aria-live="polite">
                 <span className="label">NEXT TICK</span>
@@ -1076,9 +1107,9 @@ function App() {
         <h2 id="help-title">Controls, timing & credits</h2>
         <p>
           <kbd>Space</kbd> step · <kbd>P</kbd> play/pause · <kbd>R</kbd> reset ·
-          arrows move · <kbd>1</kbd> magic · <kbd>2</kbd> ranged · <kbd>3</kbd>{" "}
-          melee · <kbd>0</kbd> off. Double-click a monster to remove it. Player
-          placement explores tiles instantly; stepping advances NPC movement.
+          arrows move. Click a prayer to toggle it. Double-click a monster to
+          remove it. Player placement explores tiles instantly; stepping
+          advances NPC movement.
         </p>
         <p>
           Current-position links do not contain live attack cooldowns. Set
@@ -1112,7 +1143,7 @@ function App() {
           <a href="https://github.com/OldSchoolSDK/InfernoTrainer">
             Inferno Trainer
           </a>
-          . OSRS artwork © Jagex; prayer icons via the OSRS Wiki.{" "}
+          . OSRS artwork and sounds © Jagex.{" "}
           <a href="https://github.com/ollieatkinson/inferno-los">Source code</a>
           .
         </p>
